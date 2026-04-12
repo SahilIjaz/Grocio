@@ -26,6 +26,8 @@ import { validate } from "@/middleware/validate";
 // Routes
 import { createAuthRouter } from "@/modules/auth/auth.routes";
 import { createTenantRouter } from "@/modules/tenants/tenant.routes";
+import { createCategoryRouter } from "@/modules/categories/category.routes";
+import { createProductRouter } from "@/modules/products/product.routes";
 
 // Config
 import { getConfig, getCORSOrigins, getJWTKeys } from "@/config";
@@ -115,6 +117,12 @@ export function createApp(prisma: PrismaClient, redis: Redis): Express {
 
   // Tenant routes (public register, protected CRUD)
   apiRouter.use("/tenants", createTenantRouter(prisma));
+
+  // Category routes (public list/get, protected CRUD)
+  apiRouter.use("/categories", createCategoryRouter(prisma));
+
+  // Product routes (public list/get, protected CRUD)
+  apiRouter.use("/products", createProductRouter(prisma));
 
   // Mount all API routes under /api/v1
   app.use(config.API_PREFIX, apiRouter);
