@@ -1,0 +1,49 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: grocio_postgres
+    environment:
+      POSTGRES_DB: grocio_dev
+      POSTGRES_USER: grocio_user
+      POSTGRES_PASSWORD: grocio_password
+      POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=pg_trgm"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U grocio_user -d grocio_dev"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - grocio_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: grocio_redis
+    command: redis-server --appendonly yes --requirepass redis_password
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - grocio_network
+
+volumes:
+  pgdata:
+    driver: local
+  redisdata:
+    driver: local
+
+networks:
+  grocio_network:
+    driver: bridge
