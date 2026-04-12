@@ -25,6 +25,7 @@ import { validate } from "@/middleware/validate";
 
 // Routes
 import { createAuthRouter } from "@/modules/auth/auth.routes";
+import { createTenantRouter } from "@/modules/tenants/tenant.routes";
 
 // Config
 import { getConfig, getCORSOrigins, getJWTKeys } from "@/config";
@@ -109,8 +110,11 @@ export function createApp(prisma: PrismaClient, redis: Redis): Express {
 
   const apiRouter = express.Router();
 
-  // Auth routes (public)
+  // Auth routes (public register, protected endpoints)
   apiRouter.use("/auth", createAuthRouter(prisma, redis, jwtPrivateKey, jwtPublicKey));
+
+  // Tenant routes (public register, protected CRUD)
+  apiRouter.use("/tenants", createTenantRouter(prisma));
 
   // Mount all API routes under /api/v1
   app.use(config.API_PREFIX, apiRouter);

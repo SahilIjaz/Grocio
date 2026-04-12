@@ -1,254 +1,328 @@
-# 🚀 Next Phase Roadmap
+# 🚀 Phase 3 Roadmap: Products & Categories
 
-## Phase 0 ✅ COMPLETE
-Monorepo scaffolding, database schema, project configuration, and development environment setup.
+**Current Status:** Phase 2 (Tenant Management) ✅ Complete  
+**Next Phase:** Phase 3 (Product Catalog)  
+**Estimated Files:** 8–10 new files  
+**Estimated LOC:** 2,500–3,000  
 
 ---
 
-## Phase 1 → BACKEND FIRST 🎯 (Auth Foundation)
+## Phase 3 Overview
 
-### Why Backend First?
+Build the product catalog system: categories, products, image uploads, search/filter, caching.
 
+**In Scope:**
+- Category CRUD (per-tenant hierarchical categories)
+- Product CRUD (SKU, price, stock, images, tags)
+- Image upload → Cloudinary
+- Product search (PostgreSQL FTS + pg_trgm)
+- Redis cache-aside pattern for catalog
+- Stock visibility (low-stock alerts via settings)
+
+**Out of Scope (defer to Phase 4+):**
+- Inventory analytics / forecasting
+- Product variants (colors, sizes)
+- Bulk upload / import
+- Search faceting beyond category/price
+
+---
+
+## Architecture (Same Pattern as Phase 2)
+
+### Layer Structure
 ```
-Your question was: "What will we be doing first - Frontend or Backend?"
-
-ANSWER: BACKEND (Phase 1) → Then FRONTEND (Phases will progress in parallel after this)
-```
-
-### The Logic:
-
-1. **Authentication is the gatekeeper** 🔐
-   - Every API call needs JWT verification
-   - Tenant isolation checks happen on every request
-   - Frontend cannot even load without working auth endpoints
-
-2. **Backend provides API contracts** 📋
-   - Frontend needs real endpoints to call
-   - Specifications for request/response formats
-   - Error handling standards
-
-3. **Risk mitigation first** 🛡️
-   - Security bugs in auth affect everything
-   - Easier to catch tenant isolation issues early
-   - Foundation must be rock-solid
-
-4. **Non-blocking parallel work** 🔄
-   - While backend auth is being built, frontend can scaffold its UI components
-   - Once auth APIs exist, frontend can integrate them
-   - By Phase 3+, frontend and backend teams work in parallel
-
-### Phase 1 Timeline (4-5 Days)
-
-```
-┌─ Backend Phase 1 (Auth) ─────────────────────┐
-│                                              │
-│  Day 1: Utilities & Error Handling          │
-│  ├─ AppError hierarchy                      │
-│  ├─ JWT utilities (sign, verify)            │
-│  └─ Password hashing (bcrypt)               │
-│                                              │
-│  Day 2: Auth Module                         │
-│  ├─ AuthRepository (Prisma queries)         │
-│  ├─ AuthService (business logic)            │
-│  ├─ AuthController (route handlers)         │
-│  └─ Routes mounted                          │
-│                                              │
-│  Day 3: Middleware & Redis                  │
-│  ├─ authenticate.ts                         │
-│  ├─ resolveTenant.ts                        │
-│  ├─ authorize.ts (RBAC)                     │
-│  ├─ Redis services                          │
-│  └─ Express app assembly                    │
-│                                              │
-│  Day 4: Database & Tests                    │
-│  ├─ Prisma migration + seed                 │
-│  ├─ Integration tests                       │
-│  └─ End-to-end verification                 │
-│                                              │
-└──────────────────────────────────────────────┘
+Controller → Service → Repository → Prisma → PostgreSQL
+                                   → Redis (cache)
 ```
 
-### What Gets Built in Phase 1
+### Tenant Isolation
+- Every category query includes `where: { tenantId }`
+- Every product query includes `where: { tenantId }`
+- Store admin can only manage own tenant's products
+- `resolveTenant` middleware ensures request has valid `tenantId`
 
-#### Backend (Express API)
+### Authorization Model
 ```
-POST   /api/v1/auth/register           ← Create account
-POST   /api/v1/auth/login              ← Get JWT tokens
-POST   /api/v1/auth/refresh            ← Refresh access token
-POST   /api/v1/auth/logout             ← Invalidate tokens
-GET    /api/v1/auth/me                 ← Get user profile
+GET /products              → Public (guest cart visible)
+GET /products/:id          → Public (guest can see details)
+POST /products             → store_admin only
+PATCH /products/:id        → store_admin only
+DELETE /products/:id       → store_admin only
+PATCH /products/:id/stock  → store_admin only
 
-+ Full middleware pipeline:
-  - JWT verification + token blacklist
-  - Tenant context extraction (tenantId injection)
-  - RBAC enforcement (roles: super_admin, store_admin, customer)
-  - Input validation (Zod schemas)
-  - Rate limiting (Redis-backed)
-  - Error handling (structured error responses)
-```
-
-#### Frontend (Next.js UI - Can start in parallel)
-```
-While backend is being built, frontend can scaffold:
-
-- Layout components (Header, Sidebar, Footer)
-- Form components (LoginForm, RegisterForm)
-- Auth pages (/auth/login, /auth/register)
-- Basic storefront shell
-
-These can be wired up to API endpoints once Phase 1 backend is complete.
+GET /categories            → Public
+POST /categories           → store_admin only
+PATCH /categories/:id      → store_admin only
+DELETE /categories/:id     → store_admin only
 ```
 
 ---
 
-## Build Order After Phase 1
+## Files to Create
+
+### 1. Schemas (Zod Validation)
+
+**File:** `apps/api/src/modules/categories/category.schemas.ts`
+
+```typescript
+export const createCategorySchema = z.object({
+  name: z.string().min(1).max(100),
+  slug: z.string().min(1).max(100),
+  description: z.string().optional(),
+  parentId: z.string().uuid().optional(),
+  sortOrder: z.number().int().nonnegative().default(0),
+  isActive: z.boolean().default(true),
+});
+
+export const updateCategorySchema = createCategorySchema.partial();
+export const listCategoriesQuerySchema = z.object({
+  includeInactive: z.boolean().optional(),
+});
+```
+
+**File:** `apps/api/src/modules/products/product.schemas.ts`
+
+```typescript
+export const createProductSchema = z.object({
+  categoryId: z.string().uuid(),
+  name: z.string().min(1).max(200),
+  slug: z.string().min(1).max(200),
+  description: z.string().optional(),
+  sku: z.string().min(1).max(80),
+  price: z.number().positive(),
+  comparePrice: z.number().optional(),
+  stockQuantity: z.number().int().nonnegative().default(0),
+  lowStockThreshold: z.number().int().nonnegative().default(10),
+  unit: z.string().default("piece"),
+  imageUrls: z.array(z.string().url()).optional(),
+  tags: z.array(z.string()).optional(),
+  isActive: z.boolean().default(true),
+  isFeatured: z.boolean().default(false),
+});
+
+export const updateProductSchema = createProductSchema.partial();
+export const updateProductStockSchema = z.object({
+  stockQuantity: z.number().int().nonnegative(),
+  reason: z.string().optional(),
+});
+```
+
+### 2. Repositories
+
+**File:** `apps/api/src/modules/categories/category.repository.ts`
+- `createCategory(tenantId, data)`
+- `findCategoryById(tenantId, categoryId)`
+- `updateCategory(tenantId, categoryId, data)`
+- `deleteCategory(tenantId, categoryId)`
+- `listCategories(tenantId, options)` with parent filtering
+- `isCategorySlugUnique(tenantId, slug)`
+
+**File:** `apps/api/src/modules/products/product.repository.ts`
+- `createProduct(tenantId, data)`
+- `findProductById(tenantId, productId)`
+- `findProductBySku(tenantId, sku)`
+- `updateProduct(tenantId, productId, data)`
+- `deleteProduct(tenantId, productId)`
+- `listProducts(tenantId, options)` with filters + FTS search
+- `updateStock(tenantId, productId, quantity, reason)`
+- `isSkuUnique(tenantId, sku)`
+- `getLowStockProducts(tenantId)`
+
+### 3. Services
+
+**File:** `apps/api/src/modules/categories/category.service.ts`
+- `createCategory(tenantId, input, requesterId)`
+- `getCategory(tenantId, categoryId)`
+- `updateCategory(tenantId, categoryId, input, requesterId)`
+- `deleteCategory(tenantId, categoryId, requesterId)`
+- `listCategories(tenantId, options)`
+- `invalidateCategoryCache(tenantId)`
+
+**File:** `apps/api/src/modules/products/product.service.ts`
+- `createProduct(tenantId, input, requesterId)`
+- `getProduct(tenantId, productId)`
+- `updateProduct(tenantId, productId, input, requesterId)`
+- `deleteProduct(tenantId, productId, requesterId)`
+- `listProducts(tenantId, options)` with cache check
+- `updateStock(tenantId, productId, quantity, reason, requesterId)`
+- `getLowStockAlerts(tenantId)`
+- `invalidateProductCache(tenantId, productId?)`
+
+### 4. Controllers
+
+**File:** `apps/api/src/modules/categories/category.controller.ts`
+- `createCategory`, `getCategory`, `updateCategory`, `deleteCategory`, `listCategories`
+
+**File:** `apps/api/src/modules/products/product.controller.ts`
+- `createProduct`, `getProduct`, `updateProduct`, `deleteProduct`, `listProducts`
+- `updateStock`, `getLowStockProducts`
+
+### 5. Routes
+
+**File:** `apps/api/src/modules/categories/category.routes.ts`
 
 ```
-Phase 1 ✅ (4-5 days)   → AUTH FOUNDATION
-         ↓
-Phase 2 (2-3 days)     → TENANT MANAGEMENT (Create store, suspend, activate)
-         ↓
-Phase 3 (4-5 days)     → PRODUCTS & SEARCH (Catalog, categories, image upload, Redis cache)
-         ↓
-Phase 4 (3-4 days)     → CART SYSTEM (Guest Redis, Auth cart, merge on login)
-         ↓
-Phase 5 (4-5 days)     → ORDER LIFECYCLE (Place order with atomic stock lock, state machine)
-         ↓
-Phase 6 (3-4 days)     → DASHBOARDS (Admin dashboards, audit logs, low-stock alerts)
-         ↓
-Phase 7 (3-4 days)     → HARDENING (Integration tests, security audit, load tests)
-         ↓
-Phase 8 (2-3 days)     → DEPLOYMENT (Docker, CI/CD, environment docs)
+POST   /api/v1/categories                [store_admin]
+GET    /api/v1/categories                [public]
+GET    /api/v1/categories/:id            [public]
+PATCH  /api/v1/categories/:id            [store_admin]
+DELETE /api/v1/categories/:id            [store_admin]
+```
+
+**File:** `apps/api/src/modules/products/product.routes.ts`
+
+```
+POST   /api/v1/products                  [store_admin]
+GET    /api/v1/products                  [public]
+GET    /api/v1/products/:id              [public]
+PATCH  /api/v1/products/:id              [store_admin]
+DELETE /api/v1/products/:id              [store_admin]
+PATCH  /api/v1/products/:id/stock        [store_admin]
+GET    /api/v1/products/low-stock        [store_admin]
+```
+
+### 6. Cache Service
+
+**File:** `apps/api/src/services/redis/catalog.cache.ts`
+
+```typescript
+export class CatalogCacheService {
+  async getProductsList(tenantId, page, limit, filtersHash) { }
+  async setProductsList(tenantId, page, limit, filtersHash, data) { }
+  async getSingleProduct(tenantId, productId) { }
+  async setSingleProduct(tenantId, productId, data) { }
+  async getCategories(tenantId) { }
+  async setCategories(tenantId, data) { }
+  async invalidateProductsCache(tenantId, productId?) { }
+  async invalidateCategoriesCache(tenantId) { }
+}
+```
+
+### 7. Tests
+
+**File:** `apps/api/tests/integration/categories.test.ts`
+- CRUD tests (create, read, update, delete)
+- Hierarchical parent-child tests
+- Slug uniqueness tests
+- Tenant isolation tests
+
+**File:** `apps/api/tests/integration/products.test.ts`
+- CRUD tests
+- Stock management tests
+- Search / filter tests (category, price, tags)
+- Tenant isolation tests
+- Cache invalidation tests
+
+---
+
+## Key Implementation Details
+
+### Hierarchical Categories
+Categories can have a `parentId` for subcategories:
+
+```sql
+CREATE TABLE categories (
+  id UUID PRIMARY KEY,
+  tenant_id UUID NOT NULL,
+  parent_id UUID REFERENCES categories(id),
+  name VARCHAR(100) NOT NULL,
+  slug VARCHAR(100) NOT NULL,
+  CONSTRAINT uq_category_slug_tenant UNIQUE (tenant_id, slug)
+);
+```
+
+### Product Search (FTS)
+PostgreSQL full-text search using `to_tsvector`:
+
+```sql
+SELECT id, name, description
+FROM products
+WHERE tenant_id = $1
+  AND to_tsvector('english', name || ' ' || COALESCE(description, '')) 
+      @@ plainto_tsquery('english', $2)
+  AND is_active = true
+ORDER BY ts_rank(...) DESC;
+
+CREATE INDEX idx_products_fts ON products 
+  USING GIN(to_tsvector('english', name || ' ' || COALESCE(description,'')));
+```
+
+Cache-aside pattern:
+1. Check Redis → HIT return
+2. MISS: query PostgreSQL FTS
+3. SET cache with 5-min TTL
+4. Return
+
+### Stock Management
+When stock updated:
+
+```typescript
+await this.repository.updateStock(tenantId, productId, newQty, reason);
+await auditLog(..., {
+  action: "UPDATE_STOCK",
+  oldValues: { stockQuantity: oldQty },
+  newValues: { stockQuantity: newQty, reason },
+});
+await catalogCache.invalidateProductsCache(tenantId, productId);
+```
+
+Low-stock alerts:
+- When stock < `lowStockThreshold`, flag in response
+- List endpoint `/products/low-stock` for admin dashboard
+
+### Image Upload Flow
+```
+Frontend (multipart/form-data) 
+  → multer middleware 
+  → cloudinary.service.uploadProductImages() 
+  → Returns Cloudinary URLs 
+  → Save URLs array in product.imageUrls (JSONB)
 ```
 
 ---
 
-## Frontend Build Path (Parallel with Backend Phases 3+)
+## Integration Points
 
-### Frontend Phases (Can start after Phase 1 backend is done)
+### From Phase 1 (Auth)
+- Use `req.user` to get `tenantId` for filtering
+- `authorize("store_admin")` middleware to protect admin endpoints
 
-```
-Phase 1B (Frontend Foundation - Parallel with Phase 2)
-├─ Create directory structure
-├─ Install shadcn/ui components
-├─ Set up Zustand stores (authStore, cartStore, tenantStore)
-├─ Set up TanStack Query + Axios with interceptors
-├─ Create middleware.ts for route guards
-└─ Scaffold auth pages (login, register)
+### From Phase 2 (Tenants)
+- All queries receive `tenantId` from resolved tenant context
+- Store admin can only access own tenant's products
 
-Phase 3B (Products UI - Parallel with Phase 3 backend)
-├─ Create product listing page
-├─ Product filters & search UI
-├─ Product detail page
-├─ Add image upload form
-
-Phase 4B (Cart UI - Parallel with Phase 4 backend)
-├─ Cart drawer component
-├─ Cart item management
-├─ Checkout form
-└─ Cart merge on login
-
-Phase 5B (Orders UI - Parallel with Phase 5 backend)
-├─ Order history page
-├─ Order detail with timeline
-└─ Order status tracking
-
-Phase 6B (Admin Dashboards - Parallel with Phase 6 backend)
-├─ Store admin dashboard
-├─ Admin product table
-├─ Admin order management
-├─ Super admin dashboard
-└─ Audit logs view
-```
+### To Phase 4 (Cart & Orders)
+- Product IDs referenced in cart items
+- Price snapshot captured in order_items
+- Stock checked atomically during order placement
 
 ---
 
-## What You Start Building Tomorrow
+## Testing Checklist
 
-### Starting Point for Phase 1: Backend Auth
+### Manual Tests
+- [ ] Create category → POST /categories
+- [ ] Create product → POST /products with images
+- [ ] Search products → verify FTS returns matches
+- [ ] Filter by price/category → verify filters work
+- [ ] Fetch low-stock products → verify threshold logic
+- [ ] Store admin manages other tenant's products → verify 403
 
+### Automated Tests
 ```bash
-# Step 1: Create src directory structure
-apps/api/src/
-├── config/               # Environment config, DB, Redis clients
-├── middleware/           # Auth, tenant scope, validation, error handling
-├── modules/
-│   └── auth/            # First module to build
-│       ├── auth.controller.ts
-│       ├── auth.service.ts
-│       ├── auth.repository.ts
-│       ├── auth.routes.ts
-│       └── auth.schemas.ts  (Zod validators)
-├── utils/               # Error classes, JWT, password, response helpers
-├── types/
-│   ├── express.d.ts     # Augment Express Request type
-│   └── index.ts
-├── app.ts               # Express factory with middleware pipeline
-└── server.ts            # HTTP server startup
-
-# Step 2: Create utility files first
-utils/
-├── AppError.ts          # Error hierarchy
-├── asyncHandler.ts      # Async error wrapper
-├── response.ts          # sendSuccess / sendError helpers
-├── jwt.ts               # sign / verify tokens
-└── password.ts          # bcrypt hash / compare
-
-# Step 3: Create middleware files
-middleware/
-├── authenticate.ts      # JWT verification + blacklist check
-├── resolveTenant.ts     # Extract tenantId from JWT
-├── authorize.ts         # RBAC role checks
-├── validate.ts          # Zod schema validation factory
-├── rateLimiter.ts       # Redis-backed rate limiting
-└── errorHandler.ts      # Global error middleware
-
-# Step 4: Create auth module
-modules/auth/
-├── auth.repository.ts   # Prisma queries (findByEmail, createUser, etc.)
-├── auth.service.ts      # Business logic (register, login, token handling)
-├── auth.controller.ts   # Request parsing + response sending
-├── auth.routes.ts       # Express Router with all endpoints
-└── auth.schemas.ts      # Zod validators for request bodies
-
-# Step 5: Wire it all up
-app.ts                   # Express app with middleware pipeline + routers
-server.ts                # Start listening on port 3001
+npm test -- categories.test.ts products.test.ts
 ```
+Target: 40+ test cases
 
 ---
 
-## Summary: Your Answer
+## Summary
 
-### Frontend or Backend? → **BACKEND**
+Phase 3 builds on Phases 1 & 2 using the same:
+- **Tenant isolation pattern** (tenantId in every query)
+- **RBAC model** (store_admin vs public)
+- **Repository-Service-Controller** layering
+- **Error handling** (AppError hierarchy)
 
-✅ **Why?**
-- Auth is the foundation everything depends on
-- Defines API contracts for frontend to consume
-- Catches security issues early
-- Non-blocking — frontend can build in parallel after Phase 1
-
-✅ **How?**
-- Phase 1 (4-5 days) builds core auth APIs
-- Phase 1B (parallel) starts frontend scaffolding
-- Phase 2+ backend and frontend teams work in parallel
-- By Phase 5, full system integration
-
-✅ **What's Next?**
-1. Set up Phase 1 development environment (Docker, pnpm install)
-2. Create backend src directory structure
-3. Build utility functions + error handling
-4. Build auth module (register, login, JWT, refresh, logout)
-5. Wire middleware pipeline
-6. Write integration tests
-7. Verify end-to-end auth flow
-
----
-
-**Ready to start Phase 1? Let me know and we'll begin building the Auth Foundation! 🚀**
-
----
-
-**Date:** April 12, 2026
-**Phase 0 Status:** ✅ Complete
-**Phase 1 Status:** Ready to begin
+**Estimated Timeline:** 3–4 days
+**Ready to Start:** When Phase 2 tests all pass ✅
