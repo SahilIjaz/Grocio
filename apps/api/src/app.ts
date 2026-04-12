@@ -1,0 +1,130 @@
+/**
+ * Express application factory
+ * Assembles all middleware and routes
+ */
+
+import express, { Express, Request, Response, NextFunction } from "express";
+import helmet from "helmet";
+import cors from "cors";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
+import { PrismaClient } from "@prisma/client";
+import Redis from "ioredis";
+
+// Utilities and middleware
+import { asyncHandler } from "@/utils/asyncHandler";
+import { sendSuccess } from "@/utils/response";
+import {
+  createAuthenticateMiddleware,
+  resolveTenant,
+  enforceTenantIsolation,
+} from "@/middleware";
+import { createErrorHandler, notFoundHandler } from "@/middleware/errorHandler";
+import { createGlobalRateLimiter, createLoginRateLimiter } from "@/middleware/rateLimiter";
+import { validate } from "@/middleware/validate";
+
+// Routes
+import { createAuthRouter } from "@/modules/auth/auth.routes";
+
+// Config
+import { getConfig, getCORSOrigins, getJWTKeys } from "@/config";
+
+/**
+ * Create Express application
+ * @param prisma - Prisma client instance
+ * @param redis - Redis client instance
+ * @returns Configured Express app
+ */
+export function createApp(prisma: PrismaClient, redis: Redis): Express {
+  const app = express();
+  const config = getConfig();
+  const { privateKey: jwtPrivateKey, publicKey: jwtPublicKey } = getJWTKeys();
+
+  // ===== SECURITY MIDDLEWARE =====
+
+  // Helmet - Security headers
+  app.use(helmet());
+
+  // CORS - Cross-origin requests
+  app.use(
+    cors({
+      origin: getCORSOrigins(),
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization", "X-Tenant-ID"],
+      exposedHeaders: ["X-RateLimit-Limit", "X-RateLimit-Remaining", "X-RateLimit-Reset"],
+    })
+  );
+
+  // ===== PARSING MIDDLEWARE =====
+
+  // Body parser
+  app.use(express.json({ limit: "10kb" }));
+  app.use(express.urlencoded({ limit: "10kb", extended: true }));
+
+  // Cookie parser
+  app.use(cookieParser());
+
+  // ===== LOGGING MIDDLEWARE =====
+
+  // Morgan HTTP request logging
+  app.use(morgan(config.NODE_ENV === "production" ? "combined" : "dev"));
+
+  // ===== REQUEST ID MIDDLEWARE =====
+
+  app.use((req: Request, res: Response, next: NextFunction) => {
+    (req as any).id = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}`;
+    res.setHeader("X-Request-ID", (req as any).id);
+    next();
+  });
+
+  // ===== RATE LIMITING MIDDLEWARE =====
+
+  // Global rate limiter (all endpoints)
+  app.use(createGlobalRateLimiter(redis, 60 * 1000, 200));
+
+  // ===== AUTHENTICATION MIDDLEWARE =====
+
+  // JWT authentication (validates tokens, checks blacklist)
+  app.use(createAuthenticateMiddleware(redis, jwtPublicKey));
+
+  // ===== TENANT RESOLUTION MIDDLEWARE =====
+
+  // Resolve tenant context from user or headers
+  app.use(resolveTenant);
+
+  // Enforce tenant isolation for non-super-admin users
+  app.use(enforceTenantIsolation);
+
+  // ===== HEALTH CHECK ENDPOINT =====
+
+  app.get("/health", (req: Request, res: Response) => {
+    sendSuccess(res, {
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+    });
+  });
+
+  // ===== API ROUTES =====
+
+  const apiRouter = express.Router();
+
+  // Auth routes (public)
+  apiRouter.use("/auth", createAuthRouter(prisma, redis, jwtPrivateKey, jwtPublicKey));
+
+  // Mount all API routes under /api/v1
+  app.use(config.API_PREFIX, apiRouter);
+
+  // ===== 404 HANDLER =====
+
+  app.use(notFoundHandler);
+
+  // ===== ERROR HANDLING MIDDLEWARE =====
+
+  // Global error handler (MUST be last)
+  app.use(createErrorHandler(config.NODE_ENV === "development"));
+
+  return app;
+}
+
+export default createApp;
