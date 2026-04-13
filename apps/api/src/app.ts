@@ -30,6 +30,7 @@ import { createCategoryRouter } from "@/modules/categories/category.routes";
 import { createProductRouter } from "@/modules/products/product.routes";
 import { createCartRouter } from "@/modules/cart/cart.routes";
 import { createOrderRouter } from "@/modules/orders/order.routes";
+import { createDashboardRouter } from "@/modules/dashboards/dashboard.routes";
 
 // Config
 import { getConfig, getCORSOrigins, getJWTKeys } from "@/config";
@@ -131,6 +132,11 @@ export function createApp(prisma: PrismaClient, redis: Redis): Express {
 
   // Order routes (authenticated users only)
   apiRouter.use("/orders", createOrderRouter(prisma));
+
+  // Dashboard & analytics routes (authenticated admins)
+  apiRouter.use("/dashboards", createDashboardRouter(prisma));
+  apiRouter.use("/audit-logs", createDashboardRouter(prisma));
+  apiRouter.use("/alerts", createDashboardRouter(prisma));
 
   // Mount all API routes under /api/v1
   app.use(config.API_PREFIX, apiRouter);
