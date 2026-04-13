@@ -194,31 +194,32 @@ Complete roadmap for building the Grocio multi-tenant grocery management system.
 **Files Created:** 12  
 **Total Lines of Code:** ~2,100
 
-### Planned Deliverables
-- Guest cart (Redis-based, 7-day TTL)
-- Authenticated user cart (PostgreSQL)
-- Cart item management (add, update, remove)
-- Cart merge on login (guest → authenticated)
-- Stock availability checks
-- Cart persistence across sessions
-- Integration tests (30-40 test cases)
+### Deliverables Completed
+✅ Guest cart (Redis-based, 7-day TTL with guestId key format)
+✅ Authenticated user cart (PostgreSQL with one-per-user-per-tenant constraint)
+✅ Cart item management (add with quantity increment, update, remove)
+✅ Cart merge on login (guest → authenticated with stock validation)
+✅ Stock availability checks (real-time validation, prevents overselling)
+✅ Cart persistence (Redis with 7-day TTL, PostgreSQL for authenticated)
+✅ Integration tests (40+ test cases covering all scenarios)
 
-### Key Features
-- Guest cart stored in Redis with guestId
-- Authenticated cart stored in PostgreSQL
-- Automatic merge when guest logs in
-- Real-time stock validation
-- Price snapshot at time of add
-- Quantity validation
-- Session persistence
+### Key Features Implemented
+✅ Guest cart stored in Redis: `guest_cart:{tenantId}:{guestId}`, 7-day TTL
+✅ Authenticated cart stored in PostgreSQL with items and product details
+✅ Automatic merge when guest logs in with guestId
+✅ Real-time stock validation before add/update operations
+✅ Price snapshot at time of add (stored as Decimal, prevents drift)
+✅ Quantity increment if product re-added (upsert semantics)
+✅ Graceful merge: skips non-existent products, partially adds over-stock items
+✅ Session persistence via PostgreSQL and Redis TTL management
 
-### API Endpoints (Planned)
-- GET /api/v1/cart (get current cart)
-- POST /api/v1/cart/items/:productId (add item)
-- PATCH /api/v1/cart/items/:productId (update quantity)
-- DELETE /api/v1/cart/items/:productId (remove item)
-- POST /api/v1/cart/merge (merge guest into authenticated)
-- DELETE /api/v1/cart (clear cart)
+### API Endpoints (All Implemented)
+✅ GET /api/v1/cart (get current user's cart)
+✅ POST /api/v1/cart/items (add item with productId, quantity)
+✅ PATCH /api/v1/cart/items/:productId (update quantity)
+✅ DELETE /api/v1/cart/items/:productId (remove item)
+✅ POST /api/v1/cart/merge (merge guest into authenticated with guestId)
+✅ DELETE /api/v1/cart (clear cart)
 
 ---
 
@@ -373,7 +374,7 @@ Phase 0  ▓▓▓▓▓▓▓▓▓▓ 100% ✅ (2026-04-12)
 Phase 1  ▓▓▓▓▓▓▓▓▓▓ 100% ✅ (2026-04-12)
 Phase 2  ▓▓▓▓▓▓▓▓▓▓ 100% ✅ (2026-04-12)
 Phase 3  ▓▓▓▓▓▓▓▓▓▓ 100% ✅ (2026-04-13)
-Phase 4  ░░░░░░░░░░   0% ⏳
+Phase 4  ▓▓▓▓▓▓▓▓▓▓ 100% ✅ (2026-04-13)
 Phase 5  ░░░░░░░░░░   0% ⏳
 Phase 6  ░░░░░░░░░░   0% ⏳
 Phase 7  ░░░░░░░░░░   0% ⏳
