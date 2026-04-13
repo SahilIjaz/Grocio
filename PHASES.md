@@ -386,19 +386,19 @@ Phase 8  ░░░░░░░░░░   0% ⏳
 ## Statistics
 
 ### Completed Work
-- **Phases Completed:** 4/9 (44%)
-- **Files Created:** 82
-- **Lines of Code:** ~9,200
-- **API Endpoints:** 33 (across auth, tenants, categories, products)
-- **Integration Tests:** 195+ tests passing
+- **Phases Completed:** 5/9 (56%)
+- **Files Created:** 94 (82 from Phase 0-3 + 12 from Phase 4)
+- **Lines of Code:** ~11,300 (9,200 from Phase 0-3 + 2,100 from Phase 4)
+- **API Endpoints:** 39 (33 from Phase 0-3 + 6 from Phase 4)
+- **Integration Tests:** 235+ tests passing (195 from Phase 0-3 + 40 from Phase 4)
 - **Dependencies:** All core dependencies installed, no additional needed
 
 ### Remaining Work
-- **Phases Remaining:** 5/9 (56%)
-- **Estimated Files:** 40+
-- **Estimated LOC:** 5,500+
-- **Estimated API Endpoints:** 15+
-- **Estimated Tests:** 100+
+- **Phases Remaining:** 4/9 (44%)
+- **Estimated Files:** 30+
+- **Estimated LOC:** 3,500+
+- **Estimated API Endpoints:** 10+
+- **Estimated Tests:** 80+
 
 ### Overall Project Metrics
 - **Total Planned Phases:** 9
@@ -509,8 +509,8 @@ Phase 8  ░░░░░░░░░░   0% ⏳
 | Authentication | ✅ Complete | JWT, refresh, logout, RBAC working |
 | Tenant Management | ✅ Complete | Multi-tenant isolation proven |
 | Catalog | ✅ Complete | Categories & products (95+ tests) |
-| Shopping Cart | ⏳ Planned | Ready to implement next |
-| Orders | ⏳ Planned | Design ready |
+| Shopping Cart | ✅ Complete | Guest + Auth carts (40+ tests) |
+| Orders | ⏳ Planned | Design ready, stock lock ready |
 | Dashboards | ⏳ Planned | Analytics & alerts |
 | Hardening | ⏳ Planned | Security & performance |
 | Deployment | ⏳ Planned | Docker & CI/CD |
@@ -529,7 +529,7 @@ Phase 8  ░░░░░░░░░░   0% ⏳
 
 **Document Created:** 2026-04-13  
 **Last Updated:** 2026-04-13  
-**Next Review:** When Phase 3 is complete
+**Next Review:** When Phase 4 is complete (current) → next is Phase 5 (Orders)
 
 ---
 
