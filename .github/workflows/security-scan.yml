@@ -1,0 +1,59 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    - cron: "0 2 * * *" # Daily at 2 AM UTC
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v2
+        with:
+          version: latest
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Run npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: Run security tests
+        run: pnpm test -- tests/security/ --run
+        env:
+          DATABASE_URL: postgresql://test:test@localhost:5432/grocio_test
+          REDIS_HOST: localhost
+          REDIS_PORT: 6379
+          JWT_PRIVATE_KEY: test_private_key
+          JWT_PUBLIC_KEY: test_public_key
+        continue-on-error: true
+
+      - name: OWASP dependency check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: "Grocio"
+          path: "."
+          format: "JSON"
+          args: >-
+            --enableExperimental
+        continue-on-error: true
+
+      - name: Upload dependency check results
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-check-report
+          path: reports/
+        continue-on-error: true

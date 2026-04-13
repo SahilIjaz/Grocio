@@ -1,0 +1,116 @@
+version: "3.8"
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: grocio_postgres_prod
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-grocio_prod}
+      POSTGRES_USER: ${POSTGRES_USER:-grocio_prod_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_INITDB_ARGS: "-c shared_preload_libraries=pg_trgm"
+    volumes:
+      - pgdata_prod:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-grocio_prod_user}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - grocio_network_prod
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  redis:
+    image: redis:7-alpine
+    container_name: grocio_redis_prod
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD} --maxmemory 512mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redisdata_prod:/data
+    restart: always
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    networks:
+      - grocio_network_prod
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  api:
+    image: ${DOCKER_REGISTRY}/grocio-api:${IMAGE_TAG:-latest}
+    container_name: grocio_api_prod
+    ports:
+      - "3001:3000"
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER:-grocio_prod_user}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-grocio_prod}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      CORS_ORIGINS: ${CORS_ORIGINS}
+      API_PREFIX: /api/v1
+      LOG_LEVEL: info
+      SENTRY_DSN: ${SENTRY_DSN}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+    networks:
+      - grocio_network_prod
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  web:
+    image: ${DOCKER_REGISTRY}/grocio-web:${IMAGE_TAG:-latest}
+    container_name: grocio_web_prod
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${API_URL}
+    depends_on:
+      - api
+    restart: always
+    networks:
+      - grocio_network_prod
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+volumes:
+  pgdata_prod:
+    driver: local
+  redisdata_prod:
+    driver: local
+
+networks:
+  grocio_network_prod:
+    driver: bridge
