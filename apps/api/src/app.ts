@@ -102,14 +102,63 @@ export function createApp(prisma: PrismaClient, redis: Redis): Express {
   // Enforce tenant isolation for non-super-admin users
   app.use(enforceTenantIsolation);
 
-  // ===== HEALTH CHECK ENDPOINT =====
+  // ===== HEALTH CHECK ENDPOINTS =====
 
-  app.get("/health", (req: Request, res: Response) => {
-    sendSuccess(res, {
+  // Liveness probe - is the application running?
+  app.get("/health", asyncHandler(async (req: Request, res: Response) => {
+    const health = {
       status: "healthy",
       timestamp: new Date().toISOString(),
-    });
-  });
+      uptime: process.uptime(),
+      checks: {
+        database: "connecting...",
+        redis: "connecting...",
+      },
+    };
+
+    try {
+      // Check database connectivity
+      await (prisma as any).$queryRaw`SELECT 1`;
+      health.checks.database = "connected";
+    } catch (error) {
+      health.checks.database = "disconnected";
+      health.status = "unhealthy";
+    }
+
+    try {
+      // Check Redis connectivity
+      await redis.ping();
+      health.checks.redis = "connected";
+    } catch (error) {
+      health.checks.redis = "disconnected";
+      health.status = "unhealthy";
+    }
+
+    const statusCode = health.status === "healthy" ? 200 : 503;
+    res.status(statusCode).json(health);
+  }));
+
+  // Readiness probe - is the application ready to accept traffic?
+  app.get("/ready", asyncHandler(async (req: Request, res: Response) => {
+    try {
+      // Check database is accessible
+      await (prisma as any).$queryRaw`SELECT 1`;
+
+      // Check Redis is accessible
+      await redis.ping();
+
+      res.status(200).json({
+        ready: true,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (error) {
+      res.status(503).json({
+        ready: false,
+        timestamp: new Date().toISOString(),
+        error: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }));
 
   // ===== API ROUTES =====
 
