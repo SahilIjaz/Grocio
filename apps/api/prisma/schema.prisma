@@ -149,9 +149,9 @@ model Product {
   slug                String         @db.VarChar(200)
   description         String?        @db.Text
   sku                 String         @db.VarChar(80)
-  price               Decimal        @db.Numeric(12, 2)
-  comparePrice        Decimal?       @db.Numeric(12, 2)
-  costPrice           Decimal?       @db.Numeric(12, 2)
+  price               Decimal
+  comparePrice        Decimal?
+  costPrice           Decimal?
   stockQuantity       Int            @default(0)
   lowStockThreshold   Int            @default(10)
   unit                String         @default("piece") @db.VarChar(30)
@@ -178,9 +178,6 @@ model Product {
   @@index([tenantId, isActive])
   @@index([tenantId, isFeatured])
   @@index([tenantId, stockQuantity])
-
-  // Full-text search
-  @@fulltext([name, description])
 }
 
 // =============================================
@@ -190,7 +187,7 @@ model Product {
 model Cart {
   id            String         @id @default(uuid())
   tenantId      String         @db.Uuid
-  userId        String         @db.Uuid
+  userId        String         @db.Uuid @unique
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -213,7 +210,7 @@ model CartItem {
   tenantId      String         @db.Uuid
   productId     String         @db.Uuid
   quantity      Int            @default(1)
-  unitPrice     Decimal        @db.Numeric(12, 2)
+  unitPrice     Decimal
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -237,10 +234,10 @@ model Order {
   userId            String         @db.Uuid
   orderNumber       String         @db.VarChar(20)
   status            OrderStatus    @default(pending)
-  subtotal          Decimal        @db.Numeric(12, 2)
-  discountAmount    Decimal        @default(0) @db.Numeric(12, 2)
-  deliveryFee       Decimal        @default(0) @db.Numeric(12, 2)
-  totalAmount       Decimal        @db.Numeric(12, 2)
+  subtotal          Decimal
+  discountAmount    Decimal        @default(0)
+  deliveryFee       Decimal        @default(0)
+  totalAmount       Decimal
   deliveryAddress   Json
   notes             String?        @db.Text
   cancelledReason   String?        @db.Text
@@ -275,8 +272,8 @@ model OrderItem {
   productName   String         @db.VarChar(200)
   productSku    String         @db.VarChar(80)
   quantity      Int
-  unitPrice     Decimal        @db.Numeric(12, 2)
-  totalPrice    Decimal        @db.Numeric(12, 2)
+  unitPrice     Decimal
+  totalPrice    Decimal
   createdAt     DateTime       @default(now())
 
   // Relations
