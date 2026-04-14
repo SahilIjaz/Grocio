@@ -12,7 +12,7 @@ CREATE TYPE "AuditAction" AS ENUM ('CREATE', 'UPDATE', 'DELETE', 'LOGIN', 'LOGOU
 
 -- CreateTable
 CREATE TABLE "Tenant" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" VARCHAR(120) NOT NULL,
     "slug" VARCHAR(60) NOT NULL,
     "status" "TenantStatus" NOT NULL DEFAULT 'pending',
@@ -29,7 +29,7 @@ CREATE TABLE "Tenant" (
 
 -- CreateTable
 CREATE TABLE "User" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "tenantId" UUID,
     "email" VARCHAR(254) NOT NULL,
     "passwordHash" TEXT NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE "User" (
 
 -- CreateTable
 CREATE TABLE "Category" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "tenantId" UUID NOT NULL,
     "parentId" UUID,
     "name" VARCHAR(100) NOT NULL,
@@ -63,7 +63,7 @@ CREATE TABLE "Category" (
 
 -- CreateTable
 CREATE TABLE "Product" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "tenantId" UUID NOT NULL,
     "categoryId" UUID,
     "name" VARCHAR(200) NOT NULL,
@@ -91,7 +91,7 @@ CREATE TABLE "Product" (
 
 -- CreateTable
 CREATE TABLE "Cart" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "tenantId" UUID NOT NULL,
     "userId" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -102,7 +102,7 @@ CREATE TABLE "Cart" (
 
 -- CreateTable
 CREATE TABLE "CartItem" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "cartId" UUID NOT NULL,
     "tenantId" UUID NOT NULL,
     "productId" UUID NOT NULL,
@@ -116,7 +116,7 @@ CREATE TABLE "CartItem" (
 
 -- CreateTable
 CREATE TABLE "Order" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "tenantId" UUID NOT NULL,
     "userId" UUID NOT NULL,
     "orderNumber" VARCHAR(20) NOT NULL,
@@ -140,7 +140,7 @@ CREATE TABLE "Order" (
 
 -- CreateTable
 CREATE TABLE "OrderItem" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "orderId" UUID NOT NULL,
     "tenantId" UUID NOT NULL,
     "productId" UUID NOT NULL,
@@ -156,7 +156,7 @@ CREATE TABLE "OrderItem" (
 
 -- CreateTable
 CREATE TABLE "PasswordResetToken" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "userId" UUID NOT NULL,
     "tokenHash" TEXT NOT NULL,
     "expiresAt" TIMESTAMP(3) NOT NULL,
@@ -168,7 +168,7 @@ CREATE TABLE "PasswordResetToken" (
 
 -- CreateTable
 CREATE TABLE "AuditLog" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "tenantId" UUID,
     "actorId" UUID,
     "actorEmail" VARCHAR(254),

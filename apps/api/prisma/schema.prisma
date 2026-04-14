@@ -51,7 +51,7 @@ enum AuditAction {
 // =============================================
 
 model Tenant {
-  id            String         @id @default(uuid())
+  id            String         @id @default(uuid()) @db.Uuid
   name          String         @db.VarChar(120)
   slug          String         @unique @db.VarChar(60)
   status        TenantStatus   @default(pending)
@@ -82,7 +82,7 @@ model Tenant {
 // =============================================
 
 model User {
-  id            String         @id @default(uuid())
+  id            String         @id @default(uuid()) @db.Uuid
   tenantId      String?        @db.Uuid
   email         String         @db.VarChar(254)
   passwordHash  String         @db.Text
@@ -113,7 +113,7 @@ model User {
 // =============================================
 
 model Category {
-  id            String         @id @default(uuid())
+  id            String         @id @default(uuid()) @db.Uuid
   tenantId      String         @db.Uuid
   parentId      String?        @db.Uuid
   name          String         @db.VarChar(100)
@@ -142,7 +142,7 @@ model Category {
 // =============================================
 
 model Product {
-  id                  String         @id @default(uuid())
+  id                  String         @id @default(uuid()) @db.Uuid
   tenantId            String         @db.Uuid
   categoryId          String?        @db.Uuid
   name                String         @db.VarChar(200)
@@ -185,7 +185,7 @@ model Product {
 // =============================================
 
 model Cart {
-  id            String         @id @default(uuid())
+  id            String         @id @default(uuid()) @db.Uuid
   tenantId      String         @db.Uuid
   userId        String         @db.Uuid @unique
   createdAt     DateTime       @default(now())
@@ -205,7 +205,7 @@ model Cart {
 // =============================================
 
 model CartItem {
-  id            String         @id @default(uuid())
+  id            String         @id @default(uuid()) @db.Uuid
   cartId        String         @db.Uuid
   tenantId      String         @db.Uuid
   productId     String         @db.Uuid
@@ -229,7 +229,7 @@ model CartItem {
 // =============================================
 
 model Order {
-  id                String         @id @default(uuid())
+  id                String         @id @default(uuid()) @db.Uuid
   tenantId          String         @db.Uuid
   userId            String         @db.Uuid
   orderNumber       String         @db.VarChar(20)
@@ -265,7 +265,7 @@ model Order {
 // =============================================
 
 model OrderItem {
-  id            String         @id @default(uuid())
+  id            String         @id @default(uuid()) @db.Uuid
   orderId       String         @db.Uuid
   tenantId      String         @db.Uuid
   productId     String         @db.Uuid
@@ -291,7 +291,7 @@ model OrderItem {
 // =============================================
 
 model PasswordResetToken {
-  id            String         @id @default(uuid())
+  id            String         @id @default(uuid()) @db.Uuid
   userId        String         @db.Uuid
   tokenHash     String         @unique @db.Text
   expiresAt     DateTime
@@ -309,7 +309,7 @@ model PasswordResetToken {
 // =============================================
 
 model AuditLog {
-  id            String         @id @default(uuid())
+  id            String         @id @default(uuid()) @db.Uuid
   tenantId      String?        @db.Uuid
   actorId       String?        @db.Uuid
   actorEmail    String?        @db.VarChar(254)
