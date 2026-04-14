@@ -65,9 +65,9 @@ async function main(): Promise<void> {
 
     const storeAdmin = await prisma.user.upsert({
       where: {
-        tenantId_email: {
-          tenantId: tenant.id,
+        email_tenantId: {
           email: storeAdminEmail,
+          tenantId: tenant.id,
         },
       },
       update: {}, // Don't update if already exists
@@ -91,9 +91,9 @@ async function main(): Promise<void> {
 
     const customer = await prisma.user.upsert({
       where: {
-        tenantId_email: {
-          tenantId: tenant.id,
+        email_tenantId: {
           email: customerEmail,
+          tenantId: tenant.id,
         },
       },
       update: {}, // Don't update if already exists
