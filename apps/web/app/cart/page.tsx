@@ -27,6 +27,9 @@ export default function CartPage() {
   const [error, setError] = useState<string | null>(null);
 
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const tax = total * 0.08;
+  const shipping = total > 0 ? 5 : 0;
+  const grandTotal = total + tax + shipping;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -39,8 +42,6 @@ export default function CartPage() {
     setError(null);
 
     try {
-      // In a real app, you'd create a cart in the backend first
-      // For now, we'll just create an order directly
       const response = await fetch("http://localhost:3001/api/v1/orders", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -61,7 +62,7 @@ export default function CartPage() {
       setCartItems([]);
       setTimeout(() => {
         window.location.href = "/";
-      }, 2000);
+      }, 2500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Checkout failed");
     } finally {
@@ -71,179 +72,213 @@ export default function CartPage() {
 
   if (success) {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-8">
-        <div className="bg-white rounded-lg shadow-lg p-12 text-center max-w-md">
-          <div className="text-6xl mb-4">✅</div>
-          <h1 className="text-3xl font-bold text-green-600 mb-2">Order Placed!</h1>
-          <p className="text-gray-600 mb-4">
-            Thank you for your order. You'll be redirected to home in a moment...
-          </p>
-          <Link href="/">
-            <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-semibold transition">
-              Back to Home
-            </button>
-          </Link>
+      <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
+        <header>
+          <div className="container">
+            <Link href="/">
+              <div className="logo">
+                <span>🛒</span>
+                <span>Grocio</span>
+              </div>
+            </Link>
+          </div>
+        </header>
+
+        <div className="container py-12" style={{ textAlign: "center" }}>
+          <div className="card" style={{ maxWidth: "600px", margin: "0 auto" }}>
+            <div style={{ fontSize: "5rem", marginBottom: "var(--spacing-4)" }}>✅</div>
+            <h1 style={{ color: "var(--success)", marginBottom: "var(--spacing-2)" }}>Order Placed Successfully!</h1>
+            <p style={{ fontSize: "1.1rem", marginBottom: "var(--spacing-8)", color: "var(--gray-600)" }}>
+              Thank you for your order. Your items will be delivered soon. Redirecting to home...
+            </p>
+            <Link href="/">
+              <button className="btn-primary">Back to Home</button>
+            </Link>
+          </div>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
       {/* Header */}
-      <header className="bg-white shadow-md">
-        <div className="max-w-7xl mx-auto px-8 py-4">
+      <header>
+        <div className="container">
           <Link href="/">
-            <h1 className="text-3xl font-bold text-green-600 hover:text-green-700 cursor-pointer">
-              🛒 Grocio
-            </h1>
+            <div className="logo">
+              <span>🛒</span>
+              <span>Grocio</span>
+            </div>
           </Link>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-8 py-12">
-        <h2 className="text-4xl font-bold text-gray-900 mb-8">Shopping Cart & Checkout</h2>
+      <div className="container py-12">
+        <h1 style={{ marginBottom: "var(--spacing-2)" }}>Shopping Cart & Checkout</h1>
+        <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-12)", fontSize: "1.1rem" }}>
+          Review your items and complete your order
+        </p>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid" style={{ gridTemplateColumns: "1fr 400px", gap: "var(--spacing-8)" }}>
           {/* Cart Items */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-8">
-              {cartItems.length === 0 ? (
-                <div className="text-center py-12">
-                  <p className="text-gray-600 text-lg mb-4">Your cart is empty</p>
-                  <p className="text-gray-500 mb-6">
-                    Demo mode: Add items from the store page to see them here
-                  </p>
-                  <Link href={`/store/${slug}`}>
-                    <button className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-semibold transition">
-                      Continue Shopping
-                    </button>
-                  </Link>
-                </div>
-              ) : (
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 mb-4">Items</h3>
-                  {cartItems.map((item) => (
-                    <div
-                      key={item.id}
-                      className="flex justify-between items-center py-4 border-b last:border-b-0"
-                    >
-                      <div>
-                        <p className="font-semibold text-gray-900">{item.name}</p>
-                        <p className="text-gray-600">Qty: {item.quantity}</p>
-                      </div>
-                      <p className="font-bold text-green-600">
-                        ${(item.price * item.quantity).toFixed(2)}
+          <div className="card">
+            {cartItems.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">🛒</div>
+                <h3 className="empty-state-title">Your Cart is Empty</h3>
+                <p className="empty-state-text">Add items from the store to get started</p>
+                <Link href={`/store/${slug}`}>
+                  <button className="btn-primary">Continue Shopping</button>
+                </Link>
+              </div>
+            ) : (
+              <div>
+                <h3 style={{ marginBottom: "var(--spacing-6)" }}>Cart Items</h3>
+                {cartItems.map((item) => (
+                  <div key={item.id} className="cart-item">
+                    <div className="cart-item-info">
+                      <h4 style={{ marginBottom: "var(--spacing-1)" }}>{item.name}</h4>
+                      <p style={{ color: "var(--gray-600)", fontSize: "0.9rem" }}>
+                        Quantity: <strong>{item.quantity}</strong>
+                      </p>
+                      <p style={{ color: "var(--gray-600)", fontSize: "0.9rem" }}>
+                        Unit Price: ${item.price.toFixed(2)}
                       </p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                    <div style={{ textAlign: "right" }}>
+                      <div className="cart-item-price">${(item.price * item.quantity).toFixed(2)}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Checkout Form */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-8 sticky top-8">
-              <h3 className="text-xl font-bold text-gray-900 mb-6">Order Summary</h3>
+          {/* Order Summary */}
+          <div className="order-summary">
+            <h3 style={{ marginBottom: "var(--spacing-6)", color: "var(--gray-900)" }}>Order Summary</h3>
 
-              {error && (
-                <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                  {error}
+            {error && (
+              <div className="alert alert-error" style={{ marginBottom: "var(--spacing-4)" }}>
+                <span>⚠️</span>
+                <div>{error}</div>
+              </div>
+            )}
+
+            <form onSubmit={handleCheckout}>
+              <div style={{ marginBottom: "var(--spacing-6)" }}>
+                <h4 style={{ marginBottom: "var(--spacing-4)", color: "var(--gray-900)" }}>Delivery Details</h4>
+
+                <div style={{ marginBottom: "var(--spacing-4)" }}>
+                  <label htmlFor="email">Email Address</label>
+                  <input
+                    id="email"
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    required
+                  />
                 </div>
-              )}
 
-              <form onSubmit={handleCheckout}>
-                <div className="space-y-4 mb-6">
+                <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: "var(--spacing-3)", marginBottom: "var(--spacing-4)" }}>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
-                      Email
-                    </label>
+                    <label htmlFor="firstName">First Name</label>
                     <input
-                      type="email"
-                      name="email"
-                      value={formData.email}
+                      id="firstName"
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                       required
                     />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-1">
-                        First Name
-                      </label>
-                      <input
-                        type="text"
-                        name="firstName"
-                        value={formData.firstName}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-1">
-                        Last Name
-                      </label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        value={formData.lastName}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
-                        required
-                      />
-                    </div>
-                  </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-1">
-                      Delivery Address
-                    </label>
-                    <textarea
-                      name="deliveryAddress"
-                      value={formData.deliveryAddress}
+                    <label htmlFor="lastName">Last Name</label>
+                    <input
+                      id="lastName"
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
                       onChange={handleInputChange}
-                      rows={3}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
                       required
-                    ></textarea>
+                    />
                   </div>
                 </div>
 
-                <div className="border-t pt-6">
-                  <div className="flex justify-between mb-4">
-                    <span className="text-gray-600">Subtotal:</span>
-                    <span className="font-semibold text-gray-900">${total.toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between mb-6">
-                    <span className="text-gray-600">Delivery:</span>
-                    <span className="font-semibold text-gray-900">$0.00</span>
-                  </div>
-                  <div className="flex justify-between mb-6 text-lg">
-                    <span className="font-bold text-gray-900">Total:</span>
-                    <span className="font-bold text-green-600">${total.toFixed(2)}</span>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading || cartItems.length === 0}
-                    className="w-full bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 disabled:bg-gray-400 font-semibold transition"
-                  >
-                    {loading ? "Processing..." : "Complete Order"}
-                  </button>
+                <div>
+                  <label htmlFor="address">Delivery Address</label>
+                  <textarea
+                    id="address"
+                    name="deliveryAddress"
+                    value={formData.deliveryAddress}
+                    onChange={handleInputChange}
+                    required
+                  ></textarea>
                 </div>
-              </form>
+              </div>
 
-              <Link href={`/store/${slug}`}>
-                <button className="w-full mt-4 bg-gray-200 text-gray-900 px-6 py-2 rounded-lg hover:bg-gray-300 font-semibold transition">
-                  Continue Shopping
-                </button>
-              </Link>
-            </div>
+              <div style={{ paddingTop: "var(--spacing-6)", borderTop: "2px solid var(--gray-200)" }}>
+                <div className="summary-row">
+                  <span>Subtotal</span>
+                  <span>${total.toFixed(2)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>Tax (8%)</span>
+                  <span>${tax.toFixed(2)}</span>
+                </div>
+                <div className="summary-row">
+                  <span>Shipping</span>
+                  <span>${shipping.toFixed(2)}</span>
+                </div>
+                <div className="summary-row total">
+                  <span>Total</span>
+                  <span className="amount">${grandTotal.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading || cartItems.length === 0}
+                className="btn-primary"
+                style={{
+                  width: "100%",
+                  padding: "var(--spacing-4)",
+                  marginTop: "var(--spacing-6)",
+                  fontSize: "1.05rem",
+                  opacity: loading || cartItems.length === 0 ? 0.6 : 1,
+                  cursor: loading || cartItems.length === 0 ? "not-allowed" : "pointer",
+                }}
+              >
+                {loading ? "Processing..." : "Complete Order"}
+              </button>
+            </form>
+
+            <Link href={`/store/${slug}`}>
+              <button
+                className="btn-secondary"
+                style={{
+                  width: "100%",
+                  padding: "var(--spacing-3)",
+                  marginTop: "var(--spacing-4)",
+                }}
+              >
+                Continue Shopping
+              </button>
+            </Link>
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer style={{ marginTop: "var(--spacing-16)" }}>
+        <div className="container">
+          <div style={{ textAlign: "center", color: "var(--gray-400)" }}>
+            <p>&copy; 2026 Grocio. All rights reserved. | Secure Checkout Powered by Grocio</p>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
