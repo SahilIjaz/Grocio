@@ -42,6 +42,12 @@ export default function Home() {
             <a href="#stores" style={{ color: "var(--gray-600)", fontWeight: 600 }}>Stores</a>
             <a href="#features" style={{ color: "var(--gray-600)", fontWeight: 600 }}>Features</a>
             <a href="#accounts" style={{ color: "var(--gray-600)", fontWeight: 600 }}>Demo</a>
+            <Link href="/auth/login">
+              <button className="btn-secondary">Login</button>
+            </Link>
+            <Link href="/auth/signup">
+              <button className="btn-primary">Sign Up</button>
+            </Link>
           </div>
         </div>
       </header>
