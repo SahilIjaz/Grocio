@@ -6,10 +6,10 @@
   "type": "module",
   "main": "dist/index.js",
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "node --input-type=module prisma/seed.ts"
   },
   "scripts": {
-    "dev": "tsc && node dist/server.js",
+    "dev": "tsc --watch --preserveWatchOutput &  sleep 1 && node --enable-source-maps dist/server.js",
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",
@@ -20,7 +20,7 @@
     "prisma:migrate:dev": "prisma migrate dev",
     "prisma:migrate:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:seed": "node --input-type=module prisma/seed.ts"
   },
   "keywords": [
     "api",
