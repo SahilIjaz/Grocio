@@ -18,24 +18,27 @@ async function main(): Promise<void> {
     const superAdminEmail = "admin@grocio.local";
     const superAdminPassword = await bcrypt.hash("SuperAdmin123!", 12);
 
-    const superAdmin = await prisma.user.upsert({
+    // Check if super admin exists first
+    let superAdmin = await prisma.user.findFirst({
       where: {
-        tenantId_email: {
-          tenantId: null,
-          email: superAdminEmail,
-        },
-      },
-      update: {}, // Don't update if already exists
-      create: {
         email: superAdminEmail,
-        firstName: "Super",
-        lastName: "Admin",
-        passwordHash: superAdminPassword,
-        role: "super_admin",
-        tenantId: null, // No tenant for super admin
-        isActive: true,
+        tenantId: null,
       },
     });
+
+    if (!superAdmin) {
+      superAdmin = await prisma.user.create({
+        data: {
+          email: superAdminEmail,
+          firstName: "Super",
+          lastName: "Admin",
+          passwordHash: superAdminPassword,
+          role: "super_admin",
+          tenantId: null,
+          isActive: true,
+        },
+      });
+    }
 
     console.log(`   ✅ Super admin created: ${superAdmin.email}`);
 
