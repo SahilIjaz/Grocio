@@ -8,6 +8,7 @@ interface Tenant {
   name: string;
   slug: string;
   status: string;
+  address?: string;
 }
 
 export default function Home() {
@@ -29,73 +30,329 @@ export default function Home() {
   }, []);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-bold text-gray-900 mb-2">🛒 Grocio</h1>
-          <p className="text-xl text-gray-600">Multi-Tenant Grocery Shopping</p>
+    <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
+      {/* Header */}
+      <header>
+        <div className="container">
+          <div className="logo">
+            <span>🛒</span>
+            <span>Grocio</span>
+          </div>
+          <div className="nav" style={{ gap: "var(--spacing-6)" }}>
+            <a href="#stores" style={{ color: "var(--gray-600)", fontWeight: 600 }}>Stores</a>
+            <a href="#features" style={{ color: "var(--gray-600)", fontWeight: 600 }}>Features</a>
+            <a href="#accounts" style={{ color: "var(--gray-600)", fontWeight: 600 }}>Demo</a>
+          </div>
         </div>
+      </header>
 
-        {error ? (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded mb-8">
-            Error: {error}
+      {/* Hero Section */}
+      <section
+        style={{
+          padding: "var(--spacing-16) var(--spacing-8)",
+          textAlign: "center",
+          background: "linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%)",
+        }}
+      >
+        <div className="container">
+          <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+            <h1 style={{ fontSize: "3.5rem", marginBottom: "var(--spacing-4)", lineHeight: 1.2 }}>
+              Fresh Groceries Delivered to Your Door
+            </h1>
+            <p
+              style={{
+                fontSize: "1.25rem",
+                color: "var(--gray-600)",
+                marginBottom: "var(--spacing-8)",
+                lineHeight: 1.6,
+              }}
+            >
+              Experience the convenience of online grocery shopping with our premium selection of fresh products,
+              competitive prices, and fast delivery.
+            </p>
+            <div style={{ display: "flex", gap: "var(--spacing-4)", justifyContent: "center", flexWrap: "wrap" }}>
+              <Link href="#stores">
+                <button className="btn-primary" style={{ padding: "var(--spacing-4) var(--spacing-8)", fontSize: "1.1rem" }}>
+                  Explore Stores →
+                </button>
+              </Link>
+              <button
+                className="btn-ghost"
+                style={{ padding: "var(--spacing-4) var(--spacing-8)", fontSize: "1.1rem" }}
+                onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+              >
+                Learn More
+              </button>
+            </div>
           </div>
-        ) : loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Loading stores...</p>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section id="features" style={{ padding: "var(--spacing-16) var(--spacing-8)" }}>
+        <div className="container">
+          <h2 style={{ textAlign: "center", marginBottom: "var(--spacing-12)" }}>Why Choose Grocio?</h2>
+          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
+            {[
+              {
+                icon: "🚚",
+                title: "Fast Delivery",
+                description: "Get your groceries delivered in 24 hours or less",
+              },
+              {
+                icon: "🌿",
+                title: "Fresh Products",
+                description: "Sourced from the best local and organic suppliers",
+              },
+              {
+                icon: "💰",
+                title: "Great Prices",
+                description: "Competitive pricing with regular discounts and offers",
+              },
+              {
+                icon: "🛡️",
+                title: "Secure Checkout",
+                description: "Safe and secure payment processing with SSL encryption",
+              },
+              {
+                icon: "📱",
+                title: "Easy Shopping",
+                description: "Intuitive interface for seamless online shopping experience",
+              },
+              {
+                icon: "🌍",
+                title: "Wide Selection",
+                description: "Browse from thousands of products across multiple categories",
+              },
+            ].map((feature, idx) => (
+              <div key={idx} className="card">
+                <div style={{ fontSize: "3rem", marginBottom: "var(--spacing-4)" }}>{feature.icon}</div>
+                <h4 style={{ marginBottom: "var(--spacing-2)" }}>{feature.title}</h4>
+                <p>{feature.description}</p>
+              </div>
+            ))}
           </div>
-        ) : tenants.length === 0 ? (
-          <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-6 py-4 rounded mb-8">
-            No stores available
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+        </div>
+      </section>
+
+      {/* Stores Section */}
+      <section id="stores" style={{ padding: "var(--spacing-16) var(--spacing-8)", background: "var(--gray-50)" }}>
+        <div className="container">
+          <h2 style={{ textAlign: "center", marginBottom: "var(--spacing-12)" }}>Available Stores</h2>
+
+          {error && (
+            <div className="alert alert-error" style={{ maxWidth: "600px", margin: "0 auto var(--spacing-8)" }}>
+              <span>⚠️</span>
+              <div>Error: {error}</div>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">⏳</div>
+              <h3 className="empty-state-title">Loading Stores</h3>
+              <p className="empty-state-text">Fetching available stores...</p>
+            </div>
+          ) : tenants.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-state-icon">🏪</div>
+              <h3 className="empty-state-title">No Stores Available</h3>
+              <p className="empty-state-text">Check back soon for more stores!</p>
+            </div>
+          ) : (
+            <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))" }}>
               {tenants.map((tenant) => (
-                <Link href={`/store/${tenant.slug}`} key={tenant.id}>
-                  <div className="bg-white rounded-lg shadow-lg hover:shadow-xl transition cursor-pointer overflow-hidden">
-                    <div className="bg-gradient-to-r from-green-400 to-blue-500 h-32"></div>
-                    <div className="p-6">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                        {tenant.name}
-                      </h2>
-                      <p className="text-gray-600 mb-4">
-                        Shop fresh groceries & more
-                      </p>
-                      <button className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 font-semibold transition">
-                        Enter Store →
-                      </button>
-                    </div>
+                <div key={tenant.id} className="card" style={{ overflow: "hidden" }}>
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "200px",
+                      background: "linear-gradient(135deg, var(--primary-light) 0%, #e0f2fe 100%)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontSize: "4rem",
+                      marginBottom: "var(--spacing-6)",
+                    }}
+                  >
+                    🛍️
                   </div>
-                </Link>
+                  <h3 style={{ marginBottom: "var(--spacing-2)" }}>{tenant.name}</h3>
+                  <p style={{ marginBottom: "var(--spacing-4)", color: "var(--gray-600)" }}>
+                    {tenant.address || "Premium grocery selection"}
+                  </p>
+                  <div style={{ display: "flex", gap: "var(--spacing-2)", alignItems: "center", marginBottom: "var(--spacing-6)" }}>
+                    <span
+                      style={{
+                        display: "inline-block",
+                        width: "8px",
+                        height: "8px",
+                        borderRadius: "50%",
+                        background: "var(--success)",
+                      }}
+                    ></span>
+                    <span style={{ fontSize: "0.9rem", color: "var(--gray-600)" }}>Open Now</span>
+                  </div>
+                  <Link href={`/store/${tenant.slug}`}>
+                    <button className="btn-primary" style={{ width: "100%", padding: "var(--spacing-3)" }}>
+                      Shop Now →
+                    </button>
+                  </Link>
+                </div>
               ))}
             </div>
+          )}
+        </div>
+      </section>
 
-            <div className="bg-white rounded-lg shadow-lg p-8 mt-12">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                Demo Accounts for Testing
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="p-4 bg-blue-50 rounded border border-blue-200">
-                  <p className="font-bold text-blue-900 mb-2">Admin Account</p>
-                  <p className="text-sm text-blue-700 mb-1">Email: admin@grocio.local</p>
-                  <p className="text-sm text-blue-700">Password: SuperAdmin123!</p>
+      {/* Demo Accounts Section */}
+      <section id="accounts" style={{ padding: "var(--spacing-16) var(--spacing-8)" }}>
+        <div className="container" style={{ maxWidth: "900px" }}>
+          <h2 style={{ textAlign: "center", marginBottom: "var(--spacing-12)" }}>Demo Accounts for Testing</h2>
+          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+            {[
+              {
+                title: "Admin Account",
+                icon: "👨‍💼",
+                email: "admin@grocio.local",
+                password: "SuperAdmin123!",
+                color: "var(--secondary)",
+              },
+              {
+                title: "Store Owner",
+                icon: "🏪",
+                email: "owner@democore.local",
+                password: "StoreAdmin123!",
+                color: "var(--primary)",
+              },
+              {
+                title: "Customer Account",
+                icon: "👤",
+                email: "customer@example.local",
+                password: "Customer123!",
+                color: "var(--accent)",
+              },
+            ].map((account, idx) => (
+              <div
+                key={idx}
+                className="card"
+                style={{
+                  borderLeft: `4px solid ${account.color}`,
+                  position: "relative",
+                }}
+              >
+                <div style={{ fontSize: "3rem", marginBottom: "var(--spacing-4)" }}>{account.icon}</div>
+                <h4 style={{ marginBottom: "var(--spacing-4)", color: "var(--gray-900)" }}>{account.title}</h4>
+                <div style={{ background: "var(--gray-50)", padding: "var(--spacing-4)", borderRadius: "var(--radius-base)", marginBottom: "var(--spacing-3)" }}>
+                  <p style={{ fontSize: "0.85rem", color: "var(--gray-600)", marginBottom: "var(--spacing-1)" }}>
+                    <strong>Email:</strong>
+                  </p>
+                  <p
+                    style={{
+                      fontSize: "0.9rem",
+                      color: account.color,
+                      fontFamily: "monospace",
+                      fontWeight: 600,
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    {account.email}
+                  </p>
                 </div>
-                <div className="p-4 bg-green-50 rounded border border-green-200">
-                  <p className="font-bold text-green-900 mb-2">Store Owner</p>
-                  <p className="text-sm text-green-700 mb-1">Email: owner@democore.local</p>
-                  <p className="text-sm text-green-700">Password: StoreAdmin123!</p>
-                </div>
-                <div className="p-4 bg-purple-50 rounded border border-purple-200">
-                  <p className="font-bold text-purple-900 mb-2">Customer Account</p>
-                  <p className="text-sm text-purple-700 mb-1">Email: customer@example.local</p>
-                  <p className="text-sm text-purple-700">Password: Customer123!</p>
+                <div style={{ background: "var(--gray-50)", padding: "var(--spacing-4)", borderRadius: "var(--radius-base)" }}>
+                  <p style={{ fontSize: "0.85rem", color: "var(--gray-600)", marginBottom: "var(--spacing-1)" }}>
+                    <strong>Password:</strong>
+                  </p>
+                  <p
+                    style={{
+                      fontSize: "0.9rem",
+                      color: account.color,
+                      fontFamily: "monospace",
+                      fontWeight: 600,
+                      wordBreak: "break-all",
+                    }}
+                  >
+                    {account.password}
+                  </p>
                 </div>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section */}
+      <section
+        style={{
+          padding: "var(--spacing-16) var(--spacing-8)",
+          background: "linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%)",
+          color: "white",
+          textAlign: "center",
+        }}
+      >
+        <div className="container" style={{ maxWidth: "600px" }}>
+          <h2 style={{ color: "white", marginBottom: "var(--spacing-4)" }}>Ready to Start Shopping?</h2>
+          <p style={{ fontSize: "1.1rem", marginBottom: "var(--spacing-8)", opacity: 0.95 }}>
+            Explore our stores and discover premium quality products delivered to your door
+          </p>
+          <Link href="#stores">
+            <button
+              className="btn-primary"
+              style={{
+                padding: "var(--spacing-4) var(--spacing-8)",
+                fontSize: "1.1rem",
+                background: "white",
+                color: "var(--primary)",
+              }}
+            >
+              Browse Stores Now →
+            </button>
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer>
+        <div className="container">
+          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}>
+            <div>
+              <h4 style={{ color: "white", marginBottom: "var(--spacing-4)" }}>About Grocio</h4>
+              <p>Your trusted online grocery store delivering fresh products and exceptional service.</p>
             </div>
-          </>
-        )}
-      </div>
+            <div>
+              <h4 style={{ color: "white", marginBottom: "var(--spacing-4)" }}>Quick Links</h4>
+              <ul style={{ listStyle: "none" }}>
+                <li style={{ marginBottom: "var(--spacing-2)" }}>
+                  <a href="#stores">Stores</a>
+                </li>
+                <li style={{ marginBottom: "var(--spacing-2)" }}>
+                  <a href="#features">Features</a>
+                </li>
+                <li style={{ marginBottom: "var(--spacing-2)" }}>
+                  <a href="#accounts">Demo Accounts</a>
+                </li>
+              </ul>
+            </div>
+            <div>
+              <h4 style={{ color: "white", marginBottom: "var(--spacing-4)" }}>Support</h4>
+              <ul style={{ listStyle: "none" }}>
+                <li style={{ marginBottom: "var(--spacing-2)" }}>
+                  <a href="#">Help Center</a>
+                </li>
+                <li style={{ marginBottom: "var(--spacing-2)" }}>
+                  <a href="#">Contact Support</a>
+                </li>
+                <li style={{ marginBottom: "var(--spacing-2)" }}>
+                  <a href="#">Shipping & Returns</a>
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div style={{ marginTop: "var(--spacing-8)", paddingTop: "var(--spacing-8)", borderTop: "1px solid rgba(255,255,255,0.1)", textAlign: "center", color: "var(--gray-400)" }}>
+            <p>&copy; 2026 Grocio. All rights reserved. | Advanced E-Commerce Platform</p>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
