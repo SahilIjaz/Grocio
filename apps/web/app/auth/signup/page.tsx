@@ -116,7 +116,7 @@ export default function SignUpPage() {
               <p style={{ marginBottom: "var(--spacing-4)", fontWeight: 600, color: "var(--gray-700)" }}>
                 What are you signing up as?
               </p>
-              <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: "var(--spacing-4)", marginBottom: "var(--spacing-8)" }}>
+              <div className="grid" style={{ gridTemplateColumns: "1fr", gap: "var(--spacing-4)", marginBottom: "var(--spacing-8)" }}>
                 <button
                   onClick={() => setAccountType("customer")}
                   style={{
