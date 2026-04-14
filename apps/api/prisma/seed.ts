@@ -19,7 +19,12 @@ async function main(): Promise<void> {
     const superAdminPassword = await bcrypt.hash("SuperAdmin123!", 12);
 
     const superAdmin = await prisma.user.upsert({
-      where: { email: superAdminEmail },
+      where: {
+        tenantId_email: {
+          tenantId: null,
+          email: superAdminEmail,
+        },
+      },
       update: {}, // Don't update if already exists
       create: {
         email: superAdminEmail,
@@ -65,9 +70,9 @@ async function main(): Promise<void> {
 
     const storeAdmin = await prisma.user.upsert({
       where: {
-        email_tenantId: {
-          email: storeAdminEmail,
+        tenantId_email: {
           tenantId: tenant.id,
+          email: storeAdminEmail,
         },
       },
       update: {}, // Don't update if already exists
@@ -91,9 +96,9 @@ async function main(): Promise<void> {
 
     const customer = await prisma.user.upsert({
       where: {
-        email_tenantId: {
-          email: customerEmail,
+        tenantId_email: {
           tenantId: tenant.id,
+          email: customerEmail,
         },
       },
       update: {}, // Don't update if already exists
