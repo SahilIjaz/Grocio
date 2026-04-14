@@ -30,6 +30,7 @@ export default function StorePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cart, setCart] = useState<Record<string, number>>({});
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,9 +55,9 @@ export default function StorePage() {
     fetchData();
   }, [slug]);
 
-  const filteredProducts = selectedCategory
-    ? products.filter((p) => p.category?.name === selectedCategory)
-    : products;
+  const filteredProducts = products
+    .filter((p) => !selectedCategory || p.category?.name === selectedCategory)
+    .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const addToCart = (productId: string) => {
     setCart((prev) => ({
@@ -83,165 +84,211 @@ export default function StorePage() {
     .reduce((sum, p) => sum + Number(p.price) * (cart[p.id] || 0), 0);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+    <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
       {/* Header */}
-      <header className="bg-white shadow-md sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
+      <header>
+        <div className="container">
           <Link href="/">
-            <h1 className="text-3xl font-bold text-green-600 hover:text-green-700 cursor-pointer">
-              🛒 Grocio
-            </h1>
+            <div className="logo">
+              <span>🛒</span>
+              <span>Grocio</span>
+            </div>
           </Link>
-          <Link href={`/cart?slug=${slug}`}>
-            <button className="relative bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 font-semibold transition">
-              🛒 Cart
-              {cartItemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm">
-                  {cartItemCount}
-                </span>
-              )}
-            </button>
-          </Link>
+          <div className="nav">
+            <input
+              type="text"
+              placeholder="Search products..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              style={{
+                width: "300px",
+                padding: "var(--spacing-3) var(--spacing-4)",
+                borderRadius: "var(--radius-lg)",
+                border: "2px solid var(--gray-200)",
+                fontSize: "1rem",
+              }}
+            />
+            <Link href={`/cart?slug=${slug}`}>
+              <button style={{ position: "relative" }} className="btn-primary">
+                <span>🛒 Cart</span>
+                {cartItemCount > 0 && (
+                  <div className="cart-badge">{cartItemCount}</div>
+                )}
+              </button>
+            </Link>
+          </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-8 py-12">
-        <div className="mb-8">
-          <h2 className="text-4xl font-bold text-gray-900 mb-2">
+      <div className="container py-12">
+        {/* Page Header */}
+        <div style={{ marginBottom: "var(--spacing-12)" }}>
+          <h1 style={{ marginBottom: "var(--spacing-2)" }}>
             {slug.replace(/-/g, " ").toUpperCase()}
-          </h2>
-          <p className="text-gray-600">Shop fresh & quality products</p>
+          </h1>
+          <p style={{ fontSize: "1.1rem", color: "var(--gray-600)" }}>
+            Discover our premium selection of fresh & quality products
+          </p>
         </div>
 
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-6 py-4 rounded mb-8">
-            Error: {error}
+          <div className="alert alert-error" style={{ marginBottom: "var(--spacing-8)" }}>
+            <span>⚠️</span>
+            <div>
+              <strong>Error:</strong> {error}
+            </div>
           </div>
         )}
 
         {loading ? (
-          <div className="text-center py-12">
-            <p className="text-gray-600">Loading products...</p>
+          <div className="empty-state">
+            <div className="empty-state-icon">⏳</div>
+            <h3 className="empty-state-title">Loading Store</h3>
+            <p className="empty-state-text">Fetching products from our catalog...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+          <div className="grid" style={{ gridTemplateColumns: "280px 1fr", gap: "var(--spacing-8)" }}>
             {/* Sidebar - Categories */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-lg shadow-md p-6 sticky top-24">
-                <h3 className="text-xl font-bold text-gray-900 mb-4">Categories</h3>
+            <div>
+              <aside className="sidebar">
+                <h3 className="sidebar-title">Categories</h3>
                 <button
                   onClick={() => setSelectedCategory(null)}
-                  className={`block w-full text-left px-4 py-2 rounded mb-2 font-semibold transition ${
-                    selectedCategory === null
-                      ? "bg-green-600 text-white"
-                      : "bg-gray-100 text-gray-900 hover:bg-gray-200"
-                  }`}
+                  className={`filter-item ${selectedCategory === null ? "active" : ""}`}
                 >
-                  All Products
+                  <span>🏷️</span> All Products
                 </button>
                 {categories.map((cat) => (
                   <button
                     key={cat.id}
                     onClick={() => setSelectedCategory(cat.name)}
-                    className={`block w-full text-left px-4 py-2 rounded mb-2 font-semibold transition ${
-                      selectedCategory === cat.name
-                        ? "bg-green-600 text-white"
-                        : "bg-gray-100 text-gray-900 hover:bg-gray-200"
-                    }`}
+                    className={`filter-item ${selectedCategory === cat.name ? "active" : ""}`}
                   >
-                    {cat.name}
+                    <span>{cat.name === "Produce" ? "🥕" : cat.name === "Dairy" ? "🥛" : "🥩"}</span> {cat.name}
                   </button>
                 ))}
-              </div>
+              </aside>
             </div>
 
             {/* Main - Products */}
-            <div className="lg:col-span-3">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.length === 0 ? (
-                  <div className="col-span-full text-center py-12">
-                    <p className="text-gray-600 text-lg">No products found</p>
+            <div>
+              {filteredProducts.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-state-icon">📦</div>
+                  <h3 className="empty-state-title">No Products Found</h3>
+                  <p className="empty-state-text">
+                    {searchTerm
+                      ? `No results for "${searchTerm}". Try a different search.`
+                      : "This category is currently empty."}
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: "var(--spacing-6)" }}>
+                    <p style={{ color: "var(--gray-600)", fontSize: "0.95rem" }}>
+                      Showing <strong>{filteredProducts.length}</strong> products
+                    </p>
                   </div>
-                ) : (
-                  filteredProducts.map((product) => (
-                    <div
-                      key={product.id}
-                      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition"
-                    >
-                      <div className="bg-gradient-to-br from-green-100 to-blue-100 h-40 flex items-center justify-center">
-                        <span className="text-5xl">🥬</span>
-                      </div>
-                      <div className="p-4">
-                        <p className="text-sm text-green-600 font-semibold mb-1">
-                          {product.category?.name || "General"}
-                        </p>
-                        <h3 className="text-lg font-bold text-gray-900 mb-2">
-                          {product.name}
-                        </h3>
-                        <p className="text-gray-600 text-sm mb-4">
-                          {product.description || "Quality product"}
-                        </p>
-                        <div className="flex justify-between items-center">
-                          <span className="text-2xl font-bold text-green-600">
-                            ${Number(product.price).toFixed(2)}
-                          </span>
-                          <div className="flex gap-2">
-                            {cart[product.id] ? (
-                              <>
-                                <button
-                                  onClick={() => removeFromCart(product.id)}
-                                  className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 transition"
-                                >
-                                  −
+
+                  <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
+                    {filteredProducts.map((product) => (
+                      <div key={product.id} className="product-card animate-slideIn">
+                        <div className="product-image">🥬</div>
+                        <div className="product-info">
+                          <div className="product-category">{product.category?.name || "General"}</div>
+                          <h3 className="product-name">{product.name}</h3>
+                          <p className="product-description">
+                            {product.description || "Quality product for your daily needs"}
+                          </p>
+
+                          <div className="product-footer">
+                            <span className="product-price">${Number(product.price).toFixed(2)}</span>
+                            <div className="product-actions">
+                              {cart[product.id] ? (
+                                <div className="qty-control">
+                                  <button onClick={() => removeFromCart(product.id)}>−</button>
+                                  <input type="text" className="qty-display" value={cart[product.id]} readOnly />
+                                  <button onClick={() => addToCart(product.id)}>+</button>
+                                </div>
+                              ) : (
+                                <button onClick={() => addToCart(product.id)} className="btn-primary" style={{ padding: "var(--spacing-2) var(--spacing-4)" }}>
+                                  Add
                                 </button>
-                                <span className="w-8 text-center font-semibold">
-                                  {cart[product.id]}
-                                </span>
-                                <button
-                                  onClick={() => addToCart(product.id)}
-                                  className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 transition"
-                                >
-                                  +
-                                </button>
-                              </>
-                            ) : (
-                              <button
-                                onClick={() => addToCart(product.id)}
-                                className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 font-semibold transition"
-                              >
-                                Add
-                              </button>
-                            )}
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Cart Summary */}
-              {cartItemCount > 0 && (
-                <div className="mt-12 bg-white rounded-lg shadow-lg p-8">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <p className="text-gray-600">Total Items: {cartItemCount}</p>
-                      <p className="text-3xl font-bold text-green-600">
-                        ${cartTotal ? cartTotal.toFixed(2) : "0.00"}
-                      </p>
-                    </div>
-                    <Link href={`/cart?slug=${slug}`}>
-                      <button className="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 font-semibold transition text-lg">
-                        Proceed to Checkout →
-                      </button>
-                    </Link>
+                    ))}
                   </div>
-                </div>
+
+                  {/* Cart Summary Floating Card */}
+                  {cartItemCount > 0 && (
+                    <div
+                      style={{
+                        marginTop: "var(--spacing-16)",
+                        padding: "var(--spacing-8)",
+                        background: "white",
+                        borderRadius: "var(--radius-lg)",
+                        boxShadow: "var(--shadow-lg)",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        borderLeft: "4px solid var(--primary)",
+                      }}
+                    >
+                      <div>
+                        <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-2)" }}>
+                          Items in Cart: <strong>{cartItemCount}</strong>
+                        </p>
+                        <h3 style={{ fontSize: "2rem", color: "var(--primary)", margin: 0 }}>
+                          ${cartTotal ? cartTotal.toFixed(2) : "0.00"}
+                        </h3>
+                      </div>
+                      <Link href={`/cart?slug=${slug}`}>
+                        <button className="btn-primary" style={{ padding: "var(--spacing-4) var(--spacing-8)", fontSize: "1.1rem" }}>
+                          Proceed to Checkout →
+                        </button>
+                      </Link>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
         )}
       </div>
+
+      {/* Footer */}
+      <footer style={{ marginTop: "var(--spacing-16)" }}>
+        <div className="container">
+          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}>
+            <div>
+              <h4 style={{ color: "white", marginBottom: "var(--spacing-4)" }}>About Grocio</h4>
+              <p>Your trusted online grocery store delivering fresh products right to your doorstep.</p>
+            </div>
+            <div>
+              <h4 style={{ color: "white", marginBottom: "var(--spacing-4)" }}>Quick Links</h4>
+              <ul style={{ listStyle: "none" }}>
+                <li><Link href="/">Home</Link></li>
+                <li><Link href={`/store/${slug}`}>Shop</Link></li>
+                <li><Link href={`/cart?slug=${slug}`}>Cart</Link></li>
+              </ul>
+            </div>
+            <div>
+              <h4 style={{ color: "white", marginBottom: "var(--spacing-4)" }}>Support</h4>
+              <ul style={{ listStyle: "none" }}>
+                <li><a href="#">Help Center</a></li>
+                <li><a href="#">Contact Us</a></li>
+                <li><a href="#">Shipping Info</a></li>
+              </ul>
+            </div>
+          </div>
+          <div style={{ marginTop: "var(--spacing-8)", paddingTop: "var(--spacing-8)", borderTop: "1px solid rgba(255,255,255,0.1)", textAlign: "center", color: "var(--gray-400)" }}>
+            <p>&copy; 2026 Grocio. All rights reserved. | Powered by Advanced E-Commerce Platform</p>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
