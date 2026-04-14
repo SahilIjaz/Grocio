@@ -5,8 +5,8 @@
  */
 
 import { PrismaClient, Tenant, User } from "@prisma/client";
-import { ConflictError, NotFoundError } from "@/utils/AppError";
-import { auditLog } from "@/services/audit.service";
+import { ConflictError, NotFoundError } from "../../utils/AppError";
+import { auditLog } from "../../services/audit.service";
 
 export class TenantRepository {
   constructor(private prisma: PrismaClient) {}
