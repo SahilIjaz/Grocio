@@ -9,7 +9,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "tsc && node dist/server.js",
     "build": "tsc",
     "start": "node dist/server.js",
     "lint": "eslint src --ext .ts",
@@ -67,6 +67,7 @@
     "eslint-config-prettier": "^9.1.0",
     "prettier": "catalog:",
     "supertest": "catalog:",
+    "tsconfig-paths": "^4.2.0",
     "tsx": "^4.7.0",
     "typescript": "catalog:",
     "vite-tsconfig-paths": "^6.1.1",
