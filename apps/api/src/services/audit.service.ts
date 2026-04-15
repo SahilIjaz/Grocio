@@ -3,7 +3,7 @@
  * Records all user actions for compliance and debugging
  */
 
-import { PrismaClient, AuditAction } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
 
 export async function auditLog(
   prisma: PrismaClient,
@@ -11,7 +11,7 @@ export async function auditLog(
     tenantId?: string | null;
     actorId?: string | null;
     actorEmail?: string | null;
-    action: AuditAction;
+    action: string;
     entityType: string;
     entityId?: string | null;
     oldValues?: any;
@@ -26,7 +26,7 @@ export async function auditLog(
         tenantId: data.tenantId || null,
         actorId: data.actorId || null,
         actorEmail: data.actorEmail || null,
-        action: data.action,
+        action: data.action as string,
         entityType: data.entityType,
         entityId: data.entityId || null,
         oldValues: data.oldValues || null,

@@ -41,7 +41,6 @@ model Tenant {
   cartItems     CartItem[]
   orders        Order[]
   orderItems    OrderItem[]
-  auditLogs     AuditLog[]
 
   @@index([status])
   @@index([slug])
@@ -68,7 +67,6 @@ model User {
   tenant        Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   cart          Cart?
   orders        Order[]
-  auditLogs     AuditLog[]
   passwordResetTokens PasswordResetToken[]
 
   // Email unique per tenant (super_admin email is globally unique)
@@ -200,7 +198,7 @@ model Order {
   tax               Decimal        @default(0)
   shippingCost      Decimal        @default(0)
   totalAmount       Decimal
-  deliveryAddress   Json
+  deliveryAddress   String
   notes             String?
   cancelledReason   String?
   confirmedAt       DateTime?
@@ -271,17 +269,14 @@ model AuditLog {
   tenantId      String?
   actorId       String?
   actorEmail    String?
-  action        AuditAction
+  action        String
   entityType    String
   entityId      String?
-  oldValues     Json?
-  newValues     Json?
+  oldValues     String?
+  newValues     String?
   ipAddress     String?
   userAgent     String?
   createdAt     DateTime       @default(now())
-
-  // Relations
-  tenant        Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([actorId])
