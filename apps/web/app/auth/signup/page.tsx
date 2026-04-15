@@ -59,6 +59,9 @@ export default function SignUpPage() {
           password: formData.password,
           firstName: formData.firstName,
           lastName: formData.lastName,
+          role: accountType === "store-owner" ? "store_admin" : "customer",
+          storeName: accountType === "store-owner" ? formData.storeName : undefined,
+          storeSlug: accountType === "store-owner" ? formData.storeSlug : undefined,
         }),
       });
 
@@ -66,10 +69,22 @@ export default function SignUpPage() {
         throw new Error("Registration failed");
       }
 
-      setSuccess(true);
-      setTimeout(() => {
-        router.push("/auth/login");
-      }, 2000);
+      const userData = await registerRes.json();
+
+      // If store owner, store the user data and redirect to dashboard
+      if (accountType === "store-owner") {
+        localStorage.setItem("user", JSON.stringify(userData));
+        setSuccess(true);
+        setTimeout(() => {
+          router.push("/dashboard");
+        }, 1500);
+      } else {
+        // For customers, redirect to login
+        setSuccess(true);
+        setTimeout(() => {
+          router.push("/auth/login");
+        }, 2000);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {

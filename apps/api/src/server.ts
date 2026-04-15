@@ -27,11 +27,48 @@ app.post("/api/v1/auth/login", async (req, res) => {
 
 app.post("/api/v1/auth/register", async (req, res) => {
   try {
-    const { email, password, firstName, lastName } = req.body;
+    const { email, password, firstName, lastName, role = "customer", storeName, storeSlug } = req.body;
+
+    // If registering as store owner, create a tenant first
+    let tenantId = null;
+    if (role === "store_admin" && storeName && storeSlug) {
+      const tenant = await prisma.tenant.create({
+        data: {
+          name: storeName,
+          slug: storeSlug,
+          status: "active",
+          contactEmail: email,
+          settings: JSON.stringify({
+            taxRate: 0.08,
+            currency: "USD",
+            timezone: "America/Los_Angeles",
+            deliveryFee: 5,
+            orderPrefix: storeSlug.toUpperCase()
+          })
+        }
+      });
+      tenantId = tenant.id;
+    }
+
     const user = await prisma.user.create({
-      data: { email, firstName, lastName, passwordHash: Buffer.from(password).toString("base64"), role: "customer" }
+      data: {
+        email,
+        firstName,
+        lastName,
+        passwordHash: Buffer.from(password).toString("base64"),
+        role: role,
+        tenantId: tenantId
+      }
     });
-    res.status(201).json({ id: user.id, email });
+
+    res.status(201).json({
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      tenantId: user.tenantId
+    });
   } catch (error) {
     res.status(500).json({ error: "Registration failed" });
   }
