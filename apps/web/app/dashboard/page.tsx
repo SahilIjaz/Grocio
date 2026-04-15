@@ -333,7 +333,6 @@ export default function DashboardPage() {
   }
 
   const totalProducts = products.length;
-  const totalRevenue = "$0.00";
   const activeCategories = categories.length;
 
   return (
@@ -406,7 +405,7 @@ export default function DashboardPage() {
                 {[
                   { label: "Total Products", value: totalProducts.toString(), icon: "📦", color: "var(--primary)" },
                   { label: "Total Categories", value: activeCategories.toString(), icon: "🏷️", color: "var(--secondary)" },
-                  { label: "Total Revenue", value: totalRevenue, icon: "💰", color: "var(--accent)" },
+                  { label: "Total Revenue", value: `$${totalRevenue.toFixed(2)}`, icon: "💰", color: "var(--accent)" },
                 ].map((stat, idx) => (
                   <div key={idx} className="card" style={{ borderLeft: `4px solid ${stat.color}` }}>
                     <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>{stat.icon}</div>
