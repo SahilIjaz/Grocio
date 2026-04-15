@@ -149,6 +149,26 @@ export default function CartPage() {
     });
   };
 
+  const increaseQuantity = (itemId: string) => {
+    setCartItems((prev) => {
+      const updated = prev.map((item) =>
+        item.id === itemId ? { ...item, quantity: item.quantity + 1 } : item
+      );
+      localStorage.setItem(`cart_${slug}`, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
+  const decreaseQuantity = (itemId: string) => {
+    setCartItems((prev) => {
+      const updated = prev.map((item) =>
+        item.id === itemId && item.quantity > 1 ? { ...item, quantity: item.quantity - 1 } : item
+      );
+      localStorage.setItem(`cart_${slug}`, JSON.stringify(updated));
+      return updated;
+    });
+  };
+
   const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
