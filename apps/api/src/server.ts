@@ -347,15 +347,21 @@ app.post("/api/v1/orders", async (req, res) => {
   try {
     const { userId, items, deliveryAddress } = req.body;
 
+    console.log("Order creation request:", { userId, itemsCount: items?.length, deliveryAddress });
+
     if (!userId || !items || items.length === 0) {
-      return res.status(400).json({ error: "Missing required fields" });
+      console.log("Missing required fields - userId:", userId, "items:", items);
+      return res.status(400).json({ error: "Missing required fields: userId, items, deliveryAddress" });
     }
 
     // Get user to find their tenant
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
+      console.log("User not found:", userId);
       return res.status(404).json({ error: "User not found" });
     }
+
+    console.log("User found:", user.id, "tenantId:", user.tenantId);
 
     // Calculate totals from items
     let subtotal = 0;
@@ -371,6 +377,8 @@ app.post("/api/v1/orders", async (req, res) => {
       };
     });
 
+    console.log("Order items prepared:", orderItems.length, "subtotal:", subtotal);
+
     const order = await prisma.order.create({
       data: {
         tenantId: user.tenantId || "",
@@ -384,10 +392,12 @@ app.post("/api/v1/orders", async (req, res) => {
       include: { items: true },
     });
 
+    console.log("Order created successfully:", order.id);
     res.status(201).json(order);
   } catch (error) {
     console.error("Order creation error:", error);
-    res.status(500).json({ error: "Failed to create order" });
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    res.status(500).json({ error: `Failed to create order: ${errorMessage}` });
   }
 });
 

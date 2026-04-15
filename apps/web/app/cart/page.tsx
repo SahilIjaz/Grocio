@@ -124,8 +124,14 @@ export default function CartPage() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create order");
+        let errorMessage = "Failed to create order";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch (e) {
+          errorMessage = `Error ${response.status}: ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       setSuccess(true);
@@ -465,15 +471,81 @@ export default function CartPage() {
                     <div className="cart-item-info">
                       <h4 style={{ marginBottom: "var(--spacing-1)" }}>{item.name}</h4>
                       <p style={{ color: "var(--gray-600)", fontSize: "0.9rem" }}>
-                        Quantity: <strong>{item.quantity}</strong>
-                      </p>
-                      <p style={{ color: "var(--gray-600)", fontSize: "0.9rem" }}>
                         Unit Price: ${item.price.toFixed(2)}
                       </p>
+                      <div style={{ marginTop: "var(--spacing-3)", display: "flex", alignItems: "center", gap: "var(--spacing-2)" }}>
+                        <button
+                          type="button"
+                          onClick={() => decreaseQuantity(item.id)}
+                          style={{
+                            width: "32px",
+                            height: "32px",
+                            padding: 0,
+                            background: "var(--gray-200)",
+                            border: "1px solid var(--gray-300)",
+                            borderRadius: "var(--radius-base)",
+                            cursor: "pointer",
+                            fontSize: "1rem",
+                            fontWeight: "bold",
+                            color: "var(--gray-700)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transition: "all var(--transition-fast)",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "var(--gray-300)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "var(--gray-200)";
+                          }}
+                        >
+                          −
+                        </button>
+                        <div
+                          style={{
+                            minWidth: "40px",
+                            textAlign: "center",
+                            fontWeight: "bold",
+                            fontSize: "1.1rem",
+                          }}
+                        >
+                          {item.quantity}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => increaseQuantity(item.id)}
+                          style={{
+                            width: "32px",
+                            height: "32px",
+                            padding: 0,
+                            background: "var(--primary)",
+                            border: "1px solid var(--primary-dark)",
+                            borderRadius: "var(--radius-base)",
+                            cursor: "pointer",
+                            fontSize: "1rem",
+                            fontWeight: "bold",
+                            color: "white",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            transition: "all var(--transition-fast)",
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.background = "var(--primary-dark)";
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.background = "var(--primary)";
+                          }}
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
                     <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "var(--spacing-3)" }}>
                       <div className="cart-item-price">${(item.price * item.quantity).toFixed(2)}</div>
                       <button
+                        type="button"
                         onClick={() => removeFromCart(item.id)}
                         style={{
                           background: "var(--danger)",
@@ -483,6 +555,13 @@ export default function CartPage() {
                           borderRadius: "var(--radius-base)",
                           cursor: "pointer",
                           fontSize: "0.85rem",
+                          transition: "all var(--transition-fast)",
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.opacity = "0.8";
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.opacity = "1";
                         }}
                       >
                         Remove
