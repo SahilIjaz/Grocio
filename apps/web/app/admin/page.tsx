@@ -310,61 +310,310 @@ export default function AdminPage() {
 
           {activeTab === "users" && (
             <div>
-              <h1 style={{ marginBottom: "var(--spacing-8)" }}>System Users</h1>
-              <div className="card">
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ borderBottom: "2px solid var(--gray-200)" }}>
-                      <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Name</th>
-                      <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Email</th>
-                      <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Role</th>
-                      <th style={{ textAlign: "center", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { name: "Admin User", email: "admin@grocio.local", role: "super_admin" },
-                      { name: "Store Owner", email: "owner@democore.local", role: "store_admin" },
-                      { name: "Customer", email: "customer@example.local", role: "customer" },
-                    ].map((u, idx) => (
-                      <tr key={idx} style={{ borderBottom: "1px solid var(--gray-200)" }}>
-                        <td style={{ padding: "var(--spacing-4)", color: "var(--gray-900)", fontWeight: 600 }}>{u.name}</td>
-                        <td style={{ padding: "var(--spacing-4)" }}>{u.email}</td>
-                        <td style={{ padding: "var(--spacing-4)" }}>
-                          <span
+              <h1 style={{ marginBottom: "var(--spacing-2)" }}>System Users</h1>
+              <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-6)" }}>Total: {totalUsers} users</p>
+
+              <div className="card" style={{ marginBottom: "var(--spacing-6)" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 150px 150px", gap: "var(--spacing-4)", marginBottom: "var(--spacing-6)" }}>
+                  <input
+                    type="text"
+                    placeholder="Search by name or email..."
+                    value={userSearch}
+                    onChange={(e) => {
+                      setUserSearch(e.target.value);
+                      setUserPage(1);
+                    }}
+                    style={{
+                      padding: "var(--spacing-3) var(--spacing-4)",
+                      border: "1px solid var(--gray-300)",
+                      borderRadius: "var(--radius-base)",
+                      fontSize: "1rem",
+                    }}
+                  />
+                  <select
+                    value={userRole}
+                    onChange={(e) => {
+                      setUserRole(e.target.value);
+                      setUserPage(1);
+                    }}
+                    style={{
+                      padding: "var(--spacing-3) var(--spacing-4)",
+                      border: "1px solid var(--gray-300)",
+                      borderRadius: "var(--radius-base)",
+                      fontSize: "1rem",
+                    }}
+                  >
+                    <option value="">All Roles</option>
+                    <option value="super_admin">Super Admin</option>
+                    <option value="store_admin">Store Admin</option>
+                    <option value="customer">Customer</option>
+                  </select>
+                  <select
+                    value={userLimit}
+                    onChange={(e) => {
+                      setUserLimit(parseInt(e.target.value));
+                      setUserPage(1);
+                    }}
+                    style={{
+                      padding: "var(--spacing-3) var(--spacing-4)",
+                      border: "1px solid var(--gray-300)",
+                      borderRadius: "var(--radius-base)",
+                      fontSize: "1rem",
+                    }}
+                  >
+                    <option value="10">10 per page</option>
+                    <option value="25">25 per page</option>
+                    <option value="50">50 per page</option>
+                  </select>
+                </div>
+
+                {users.length === 0 ? (
+                  <div className="empty-state">
+                    <div className="empty-state-icon">👥</div>
+                    <h3 className="empty-state-title">No Users Found</h3>
+                    <p className="empty-state-text">Try adjusting your search or filters</p>
+                  </div>
+                ) : (
+                  <>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                      <thead>
+                        <tr style={{ borderBottom: "2px solid var(--gray-200)" }}>
+                          <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Name</th>
+                          <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Email</th>
+                          <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Role</th>
+                          <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Created</th>
+                          <th style={{ textAlign: "center", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {users.map((u, idx) => (
+                          <tr key={idx} style={{ borderBottom: "1px solid var(--gray-200)" }}>
+                            <td style={{ padding: "var(--spacing-4)", color: "var(--gray-900)", fontWeight: 600 }}>
+                              {u.firstName} {u.lastName}
+                            </td>
+                            <td style={{ padding: "var(--spacing-4)", fontSize: "0.9rem" }}>{u.email}</td>
+                            <td style={{ padding: "var(--spacing-4)" }}>
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  background: u.role === "super_admin" ? "#dbeafe" : u.role === "store_admin" ? "#dcfce7" : "#f3f4f6",
+                                  color: u.role === "super_admin" ? "#1e40af" : u.role === "store_admin" ? "#166534" : "#374151",
+                                  padding: "var(--spacing-1) var(--spacing-3)",
+                                  borderRadius: "var(--radius-sm)",
+                                  fontSize: "0.85rem",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                {u.role.replace("_", " ").toUpperCase()}
+                              </span>
+                            </td>
+                            <td style={{ padding: "var(--spacing-4)", fontSize: "0.9rem", color: "var(--gray-600)" }}>
+                              {new Date(u.createdAt).toLocaleDateString()}
+                            </td>
+                            <td style={{ padding: "var(--spacing-4)", textAlign: "center" }}>
+                              <button
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  color: "var(--primary)",
+                                  cursor: "pointer",
+                                  fontWeight: 600,
+                                  fontSize: "0.9rem",
+                                }}
+                              >
+                                View
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+
+                    {/* Pagination */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "var(--spacing-6)", paddingTop: "var(--spacing-6)", borderTop: "1px solid var(--gray-200)" }}>
+                      <div style={{ fontSize: "0.9rem", color: "var(--gray-600)" }}>
+                        Showing {(userPage - 1) * userLimit + 1} to {Math.min(userPage * userLimit, totalUsers)} of {totalUsers}
+                      </div>
+                      <div style={{ display: "flex", gap: "var(--spacing-2)" }}>
+                        <button
+                          onClick={() => setUserPage(Math.max(1, userPage - 1))}
+                          disabled={userPage === 1}
+                          style={{
+                            padding: "var(--spacing-2) var(--spacing-4)",
+                            border: "1px solid var(--gray-300)",
+                            borderRadius: "var(--radius-base)",
+                            background: userPage === 1 ? "var(--gray-100)" : "white",
+                            cursor: userPage === 1 ? "not-allowed" : "pointer",
+                            opacity: userPage === 1 ? 0.5 : 1,
+                          }}
+                        >
+                          ← Previous
+                        </button>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => setUserPage(page)}
                             style={{
-                              display: "inline-block",
-                              background: u.role === "super_admin" ? "#dbeafe" : u.role === "store_admin" ? "#dcfce7" : "#f3f4f6",
-                              color: u.role === "super_admin" ? "#1e40af" : u.role === "store_admin" ? "#166534" : "#374151",
-                              padding: "var(--spacing-1) var(--spacing-3)",
-                              borderRadius: "var(--radius-sm)",
-                              fontSize: "0.85rem",
-                              fontWeight: 600,
+                              padding: "var(--spacing-2) var(--spacing-3)",
+                              border: userPage === page ? "none" : "1px solid var(--gray-300)",
+                              borderRadius: "var(--radius-base)",
+                              background: userPage === page ? "var(--primary)" : "white",
+                              color: userPage === page ? "white" : "var(--gray-900)",
+                              cursor: "pointer",
+                              fontWeight: userPage === page ? 600 : 500,
+                              minWidth: "40px",
                             }}
                           >
-                            {u.role.replace("_", " ").toUpperCase()}
-                          </span>
-                        </td>
-                        <td style={{ padding: "var(--spacing-4)", textAlign: "center" }}>
-                          <button style={{ background: "none", border: "none", color: "var(--primary)", cursor: "pointer", fontWeight: 600 }}>
-                            Manage
+                            {page}
                           </button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        ))}
+                        <button
+                          onClick={() => setUserPage(Math.min(totalPages, userPage + 1))}
+                          disabled={userPage === totalPages}
+                          style={{
+                            padding: "var(--spacing-2) var(--spacing-4)",
+                            border: "1px solid var(--gray-300)",
+                            borderRadius: "var(--radius-base)",
+                            background: userPage === totalPages ? "var(--gray-100)" : "white",
+                            cursor: userPage === totalPages ? "not-allowed" : "pointer",
+                            opacity: userPage === totalPages ? 0.5 : 1,
+                          }}
+                        >
+                          Next →
+                        </button>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
 
           {activeTab === "analytics" && (
             <div>
-              <h1 style={{ marginBottom: "var(--spacing-8)" }}>Analytics</h1>
-              <div className="empty-state">
-                <div className="empty-state-icon">📊</div>
-                <h3 className="empty-state-title">Coming Soon</h3>
-                <p className="empty-state-text">Advanced analytics dashboard is under development</p>
+              <h1 style={{ marginBottom: "var(--spacing-8)" }}>Analytics & Reports</h1>
+
+              {/* Key Metrics */}
+              <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "var(--spacing-6)", marginBottom: "var(--spacing-8)" }}>
+                {[
+                  { label: "Total Users", value: analytics?.totalUsers || 0, icon: "👥", color: "var(--accent)" },
+                  { label: "Total Tenants", value: analytics?.totalTenants || 0, icon: "🏢", color: "var(--secondary)" },
+                  { label: "Total Orders", value: analytics?.totalOrders || 0, icon: "🛒", color: "#8b5cf6" },
+                  { label: "Total Revenue", value: `$${(analytics?.totalRevenue || 0).toFixed(2)}`, icon: "💰", color: "#10b981" },
+                ].map((stat, idx) => (
+                  <div key={idx} className="card" style={{ borderLeft: `4px solid ${stat.color}` }}>
+                    <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>{stat.icon}</div>
+                    <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-1)" }}>{stat.label}</p>
+                    <h3 style={{ fontSize: "2rem", color: stat.color, margin: 0 }}>{stat.value}</h3>
+                  </div>
+                ))}
+              </div>
+
+              {/* Users by Role & Orders by Status */}
+              <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "var(--spacing-6)", marginBottom: "var(--spacing-8)" }}>
+                <div className="card">
+                  <h3 style={{ marginBottom: "var(--spacing-6)" }}>Users by Role</h3>
+                  {analytics?.usersByRole && analytics.usersByRole.length > 0 ? (
+                    <div>
+                      {analytics.usersByRole.map((item, idx) => (
+                        <div key={idx} style={{ marginBottom: "var(--spacing-4)", paddingBottom: "var(--spacing-4)", borderBottom: idx < analytics.usersByRole.length - 1 ? "1px solid var(--gray-200)" : "none" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "var(--spacing-2)" }}>
+                            <span style={{ fontWeight: 600, textTransform: "capitalize" }}>{item.role.replace("_", " ")}</span>
+                            <span style={{ color: "var(--primary)", fontWeight: 700 }}>{item._count}</span>
+                          </div>
+                          <div style={{ width: "100%", height: "8px", background: "var(--gray-200)", borderRadius: "4px", overflow: "hidden" }}>
+                            <div
+                              style={{
+                                width: `${((item._count / (analytics.totalUsers || 1)) * 100).toFixed(0)}%`,
+                                height: "100%",
+                                background: item.role === "super_admin" ? "#3b82f6" : item.role === "store_admin" ? "#10b981" : "#f59e0b",
+                                transition: "width 0.3s",
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ color: "var(--gray-600)" }}>No user data available</p>
+                  )}
+                </div>
+
+                <div className="card">
+                  <h3 style={{ marginBottom: "var(--spacing-6)" }}>Orders by Status</h3>
+                  {analytics?.ordersByStatus && analytics.ordersByStatus.length > 0 ? (
+                    <div>
+                      {analytics.ordersByStatus.map((item, idx) => (
+                        <div key={idx} style={{ marginBottom: "var(--spacing-4)", paddingBottom: "var(--spacing-4)", borderBottom: idx < analytics.ordersByStatus.length - 1 ? "1px solid var(--gray-200)" : "none" }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "var(--spacing-2)" }}>
+                            <span style={{ fontWeight: 600, textTransform: "capitalize" }}>{item.status}</span>
+                            <span style={{ color: "#8b5cf6", fontWeight: 700 }}>{item._count}</span>
+                          </div>
+                          <div style={{ width: "100%", height: "8px", background: "var(--gray-200)", borderRadius: "4px", overflow: "hidden" }}>
+                            <div
+                              style={{
+                                width: `${((item._count / (analytics.totalOrders || 1)) * 100).toFixed(0)}%`,
+                                height: "100%",
+                                background: item.status === "pending" ? "#f59e0b" : item.status === "confirmed" ? "#3b82f6" : item.status === "shipped" ? "#8b5cf6" : "#10b981",
+                                transition: "width 0.3s",
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ color: "var(--gray-600)" }}>No order data available</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Recent Orders */}
+              <div className="card">
+                <h3 style={{ marginBottom: "var(--spacing-6)" }}>Recent Orders</h3>
+                {analytics?.recentOrders && analytics.recentOrders.length > 0 ? (
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "2px solid var(--gray-200)" }}>
+                        <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Order #</th>
+                        <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Customer</th>
+                        <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Store</th>
+                        <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Amount</th>
+                        <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {analytics.recentOrders.map((order, idx) => (
+                        <tr key={idx} style={{ borderBottom: "1px solid var(--gray-200)" }}>
+                          <td style={{ padding: "var(--spacing-4)", fontWeight: 600, color: "var(--primary)" }}>{order.orderNumber}</td>
+                          <td style={{ padding: "var(--spacing-4)" }}>
+                            {order.user.firstName} {order.user.lastName}
+                          </td>
+                          <td style={{ padding: "var(--spacing-4)" }}>{order.tenant?.name || "N/A"}</td>
+                          <td style={{ padding: "var(--spacing-4)", fontWeight: 600 }}>${Number(order.totalAmount).toFixed(2)}</td>
+                          <td style={{ padding: "var(--spacing-4)" }}>
+                            <span
+                              style={{
+                                display: "inline-block",
+                                background: order.status === "pending" ? "#fef3c7" : order.status === "confirmed" ? "#dbeafe" : order.status === "shipped" ? "#ede9fe" : "#dcfce7",
+                                color: order.status === "pending" ? "#b45309" : order.status === "confirmed" ? "#1e40af" : order.status === "shipped" ? "#6d28d9" : "#166534",
+                                padding: "var(--spacing-1) var(--spacing-3)",
+                                borderRadius: "var(--radius-sm)",
+                                fontSize: "0.85rem",
+                                fontWeight: 600,
+                                textTransform: "capitalize",
+                              }}
+                            >
+                              {order.status}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <p style={{ color: "var(--gray-600)" }}>No orders yet</p>
+                )}
               </div>
             </div>
           )}
