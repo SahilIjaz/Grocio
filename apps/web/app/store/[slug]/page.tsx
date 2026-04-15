@@ -333,7 +333,7 @@ export default function StorePage() {
                             e.currentTarget.style.boxShadow = "var(--shadow-md)";
                           }}>
                             <div className="product-image" style={{ overflow: "hidden", backgroundColor: "var(--gray-100)" }}>
-                            {productImage ? (
+                              {productImage ? (
                               <img
                                 src={productImage}
                                 alt={product.name}
@@ -349,12 +349,12 @@ export default function StorePage() {
                                   e.currentTarget.parentElement!.innerHTML = '<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f0f0; color: #999; font-size: 0.9rem;">No Image</div>';
                                 }}
                               />
-                            ) : (
-                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--gray-100)", color: "var(--gray-400)", fontSize: "0.9rem" }}>
-                                No Image
-                              </div>
-                            )}
-                          </div>
+                              ) : (
+                                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--gray-100)", color: "var(--gray-400)", fontSize: "0.9rem" }}>
+                                  No Image
+                                </div>
+                              )}
+                            </div>
                           <div className="product-info">
                             <div className="product-category">{product.category?.name || "General"}</div>
                             <h3 className="product-name">{product.name}</h3>
