@@ -1047,16 +1047,32 @@ export default function DashboardPage() {
             <div>
               <h1 style={{ marginBottom: "var(--spacing-8)" }}>Orders & Revenue</h1>
 
+              <div className="card" style={{ marginBottom: "var(--spacing-8)", background: "#f0fdf4", borderLeft: "4px solid #10b981", padding: "var(--spacing-4)" }}>
+                <p style={{ margin: 0, color: "#166534", fontWeight: 600 }}>
+                  💡 <strong>Revenue Tracking:</strong> Only delivered orders count towards revenue. Pending and in-process orders are tracked separately.
+                </p>
+              </div>
+
               <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "var(--spacing-6)", marginBottom: "var(--spacing-8)" }}>
                 <div className="card" style={{ borderLeft: "4px solid var(--primary)" }}>
                   <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>🛒</div>
                   <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-1)" }}>Total Orders</p>
                   <h3 style={{ fontSize: "2rem", color: "var(--primary)", margin: 0 }}>{orders.length}</h3>
                 </div>
-                <div className="card" style={{ borderLeft: "4px solid var(--accent)" }}>
-                  <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>💰</div>
-                  <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-1)" }}>Total Revenue</p>
-                  <h3 style={{ fontSize: "2rem", color: "var(--accent)", margin: 0 }}>${totalRevenue.toFixed(2)}</h3>
+                <div className="card" style={{ borderLeft: "4px solid #10b981" }}>
+                  <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>✅</div>
+                  <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-1)" }}>Revenue (Delivered)</p>
+                  <h3 style={{ fontSize: "2rem", color: "#10b981", margin: 0 }}>${(orderStats?.revenue || 0).toFixed(2)}</h3>
+                </div>
+                <div className="card" style={{ borderLeft: "4px solid #f59e0b" }}>
+                  <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>⏳</div>
+                  <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-1)" }}>Pending Value</p>
+                  <h3 style={{ fontSize: "2rem", color: "#f59e0b", margin: 0 }}>${(orderStats?.pendingOrdersValue || 0).toFixed(2)}</h3>
+                </div>
+                <div className="card" style={{ borderLeft: "4px solid #3b82f6" }}>
+                  <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>📦</div>
+                  <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-1)" }}>Processing Value</p>
+                  <h3 style={{ fontSize: "2rem", color: "#3b82f6", margin: 0 }}>${(orderStats?.processingOrdersValue || 0).toFixed(2)}</h3>
                 </div>
               </div>
 
