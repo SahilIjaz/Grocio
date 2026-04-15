@@ -378,17 +378,26 @@ app.post("/api/v1/orders", async (req, res) => {
       return res.status(400).json({ error: "Unable to determine store for order. Please provide tenantSlug." });
     }
 
-    // Calculate totals from items
+    // Calculate totals from items and get product SKUs
     let subtotal = 0;
+    const productIds = items.map((item: any) => item.id);
+    const products = await prisma.product.findMany({
+      where: { id: { in: productIds } }
+    });
+    const productMap = new Map(products.map(p => [p.id, p]));
+
     const orderItems = items.map((item: any) => {
+      const product = productMap.get(item.id);
       const itemTotal = item.price * item.quantity;
       subtotal += itemTotal;
       return {
         productId: item.id,
         productName: item.name,
+        productSku: product?.sku || "UNKNOWN",
         quantity: item.quantity,
         unitPrice: item.price.toString(),
         totalPrice: itemTotal.toString(),
+        tenantId,
       };
     });
 
