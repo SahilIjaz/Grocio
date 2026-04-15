@@ -37,7 +37,7 @@ export default function DashboardPage() {
   const [tenantSlug, setTenantSlug] = useState("");
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showAddCategory, setShowAddCategory] = useState(false);
-  const [productForm, setProductForm] = useState({ name: "", price: "", stock: "", description: "" });
+  const [productForm, setProductForm] = useState({ name: "", price: "", stock: "", description: "", categoryId: "" });
   const [categoryForm, setCategoryForm] = useState({ name: "", description: "" });
 
   useEffect(() => {
@@ -235,23 +235,56 @@ export default function DashboardPage() {
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-8)" }}>
                 <h1 style={{ margin: 0 }}>Products Management ({totalProducts})</h1>
-                <button className="btn-primary" onClick={() => setShowAddProduct(true)}>➕ Add New Product</button>
+                <button
+                  className="btn-primary"
+                  onClick={() => {
+                    if (categories.length === 0) {
+                      alert("⚠️ Please create at least one category first!");
+                      setActiveTab("categories");
+                      setShowAddCategory(true);
+                    } else {
+                      setShowAddProduct(true);
+                    }
+                  }}
+                >
+                  ➕ Add New Product
+                </button>
               </div>
 
-              {showAddProduct && (
+              {showAddProduct && categories.length > 0 && (
                 <div className="card" style={{ marginBottom: "var(--spacing-8)", background: "#f0fdf4", borderLeft: "4px solid var(--success)" }}>
                   <h3 style={{ marginBottom: "var(--spacing-4)" }}>Add New Product</h3>
                   <form onSubmit={handleAddProduct}>
                     <div style={{ marginBottom: "var(--spacing-4)" }}>
-                      <label>Product Name</label>
+                      <label>Category *</label>
+                      <select
+                        value={productForm.name ? productForm.name.split("|")[1] || "" : ""}
+                        onChange={(e) => {
+                          if (e.target.value) {
+                            setProductForm({...productForm});
+                          }
+                        }}
+                        required
+                        style={{ width: "100%", padding: "var(--spacing-3) var(--spacing-4)", border: "2px solid var(--gray-200)", borderRadius: "var(--radius-base)", fontSize: "1rem" }}
+                      >
+                        <option value="">Select a category</option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label>Product Name *</label>
                       <input type="text" value={productForm.name} onChange={(e) => setProductForm({...productForm, name: e.target.value})} required />
                     </div>
                     <div style={{ marginBottom: "var(--spacing-4)" }}>
-                      <label>Price</label>
+                      <label>Price *</label>
                       <input type="number" step="0.01" value={productForm.price} onChange={(e) => setProductForm({...productForm, price: e.target.value})} required />
                     </div>
                     <div style={{ marginBottom: "var(--spacing-4)" }}>
-                      <label>Stock Quantity</label>
+                      <label>Stock Quantity *</label>
                       <input type="number" value={productForm.stock} onChange={(e) => setProductForm({...productForm, stock: e.target.value})} required />
                     </div>
                     <div style={{ marginBottom: "var(--spacing-4)" }}>
@@ -263,6 +296,29 @@ export default function DashboardPage() {
                       <button type="button" className="btn-secondary" onClick={() => setShowAddProduct(false)}>Cancel</button>
                     </div>
                   </form>
+                </div>
+              )}
+
+              {showAddProduct && categories.length === 0 && (
+                <div className="card" style={{ marginBottom: "var(--spacing-8)", background: "#fef3c7", borderLeft: "4px solid var(--warning)" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "var(--spacing-4)" }}>
+                    <div style={{ fontSize: "2rem" }}>⚠️</div>
+                    <div>
+                      <h3 style={{ margin: 0, marginBottom: "var(--spacing-2)" }}>No Categories Found</h3>
+                      <p style={{ color: "var(--gray-600)", margin: 0 }}>You must create at least one category before adding products.</p>
+                    </div>
+                  </div>
+                  <button
+                    className="btn-primary"
+                    onClick={() => {
+                      setShowAddProduct(false);
+                      setShowAddCategory(true);
+                      setActiveTab("categories");
+                    }}
+                    style={{ marginTop: "var(--spacing-4)" }}
+                  >
+                    Create Category First
+                  </button>
                 </div>
               )}
 
