@@ -99,18 +99,29 @@ export default function DashboardPage() {
 
       if (tenant) {
         setTenantSlug(tenant.slug);
+        setStore(tenant);
+        if (tenant.logoUrl) {
+          setStoreLogoPreview(tenant.logoUrl);
+        }
 
-        // Fetch products and categories
-        const [productsRes, categoriesRes] = await Promise.all([
+        // Fetch products, categories, and orders
+        const [productsRes, categoriesRes, ordersRes] = await Promise.all([
           fetch(`http://localhost:3001/api/v1/tenants/${tenant.slug}/products`),
           fetch(`http://localhost:3001/api/v1/tenants/${tenant.slug}/categories`),
+          fetch(`http://localhost:3001/api/v1/tenants/${tenant.slug}/orders`),
         ]);
 
         const productsData = await productsRes.json();
         const categoriesData = await categoriesRes.json();
+        const ordersData = await ordersRes.json();
 
         setProducts(Array.isArray(productsData) ? productsData : []);
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+
+        if (ordersData.orders) {
+          setOrders(Array.isArray(ordersData.orders) ? ordersData.orders : []);
+          setTotalRevenue(ordersData.totalRevenue || 0);
+        }
       }
     } catch (error) {
       console.error("Failed to fetch store data:", error);
@@ -269,6 +280,43 @@ export default function DashboardPage() {
     setProductImagePreviews(productImagePreviews.filter((_, i) => i !== index));
   };
 
+  const handleStoreLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setStoreLogoFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setStoreLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleUpdateStoreLogo = async () => {
+    if (!tenantSlug || !storeLogoPreview) return;
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/v1/tenants/${tenantSlug}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          logoUrl: storeLogoPreview,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update store");
+      }
+
+      const updatedStore = await response.json();
+      setStore(updatedStore);
+      alert("✅ Store logo updated successfully!");
+    } catch (error) {
+      console.error("Error:", error);
+      alert("❌ Failed to update store logo");
+    }
+  };
+
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
@@ -320,6 +368,8 @@ export default function DashboardPage() {
             { id: "overview", label: "📊 Overview", icon: "📊" },
             { id: "products", label: "📦 Products", icon: "📦" },
             { id: "categories", label: "🏷️ Categories", icon: "🏷️" },
+            { id: "orders", label: "🛒 Orders", icon: "🛒" },
+            { id: "settings", label: "⚙️ Settings", icon: "⚙️" },
           ].map((item) => (
             <button
               key={item.id}
@@ -744,6 +794,141 @@ export default function DashboardPage() {
                   ))}
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === "orders" && (
+            <div>
+              <h1 style={{ marginBottom: "var(--spacing-8)" }}>Orders & Revenue</h1>
+
+              <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "var(--spacing-6)", marginBottom: "var(--spacing-8)" }}>
+                <div className="card" style={{ borderLeft: "4px solid var(--primary)" }}>
+                  <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>🛒</div>
+                  <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-1)" }}>Total Orders</p>
+                  <h3 style={{ fontSize: "2rem", color: "var(--primary)", margin: 0 }}>{orders.length}</h3>
+                </div>
+                <div className="card" style={{ borderLeft: "4px solid var(--accent)" }}>
+                  <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>💰</div>
+                  <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-1)" }}>Total Revenue</p>
+                  <h3 style={{ fontSize: "2rem", color: "var(--accent)", margin: 0 }}>${totalRevenue.toFixed(2)}</h3>
+                </div>
+              </div>
+
+              {orders.length === 0 ? (
+                <div className="card">
+                  <div className="empty-state">
+                    <div className="empty-state-icon">📦</div>
+                    <h3 className="empty-state-title">No Orders Yet</h3>
+                    <p className="empty-state-text">Orders will appear here once customers place them</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="card">
+                  <h3 style={{ marginBottom: "var(--spacing-6)" }}>Recent Orders</h3>
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                      <thead>
+                        <tr style={{ borderBottom: "2px solid var(--gray-200)" }}>
+                          <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Order ID</th>
+                          <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Customer</th>
+                          <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Amount</th>
+                          <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {orders.map((order) => (
+                          <tr key={order.id} style={{ borderBottom: "1px solid var(--gray-200)" }}>
+                            <td style={{ padding: "var(--spacing-4)", color: "var(--primary)", fontWeight: 600 }}>{order.orderNumber}</td>
+                            <td style={{ padding: "var(--spacing-4)", color: "var(--gray-900)" }}>
+                              {order.user.firstName} {order.user.lastName}
+                            </td>
+                            <td style={{ padding: "var(--spacing-4)", color: "var(--primary)", fontWeight: 600 }}>
+                              ${Number(order.totalAmount).toFixed(2)}
+                            </td>
+                            <td style={{ padding: "var(--spacing-4)", color: "var(--gray-600)" }}>
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === "settings" && (
+            <div>
+              <h1 style={{ marginBottom: "var(--spacing-8)" }}>Store Settings</h1>
+
+              <div className="card" style={{ maxWidth: "600px", marginBottom: "var(--spacing-8)" }}>
+                <h3 style={{ marginBottom: "var(--spacing-6)" }}>Store Logo</h3>
+
+                {storeLogoPreview && (
+                  <div style={{ marginBottom: "var(--spacing-4)" }}>
+                    <p style={{ fontSize: "0.9rem", color: "var(--gray-600)", marginBottom: "var(--spacing-2)" }}>Preview:</p>
+                    <img
+                      src={storeLogoPreview}
+                      alt="Store Logo"
+                      style={{
+                        width: "150px",
+                        height: "150px",
+                        objectFit: "cover",
+                        borderRadius: "var(--radius-lg)",
+                        border: "2px solid var(--gray-200)",
+                      }}
+                    />
+                  </div>
+                )}
+
+                <div style={{ marginBottom: "var(--spacing-4)" }}>
+                  <label>Upload Store Logo/Thumbnail</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleStoreLogoSelect}
+                    style={{
+                      display: "block",
+                      width: "100%",
+                      padding: "var(--spacing-3) var(--spacing-4)",
+                      border: "2px dashed var(--primary)",
+                      borderRadius: "var(--radius-base)",
+                      cursor: "pointer",
+                    }}
+                  />
+                  <p style={{ color: "var(--gray-600)", fontSize: "0.9rem", marginTop: "var(--spacing-2)" }}>
+                    This logo will be displayed on the store page
+                  </p>
+                </div>
+
+                {storeLogoPreview && (
+                  <button
+                    type="button"
+                    onClick={handleUpdateStoreLogo}
+                    className="btn-primary"
+                    style={{ width: "100%" }}
+                  >
+                    💾 Save Logo
+                  </button>
+                )}
+              </div>
+
+              <div className="card" style={{ maxWidth: "600px" }}>
+                <h3 style={{ marginBottom: "var(--spacing-6)" }}>Store Information</h3>
+                <div style={{ marginBottom: "var(--spacing-4)" }}>
+                  <label>Store Name</label>
+                  <input type="text" value={store?.name || ""} readOnly style={{ background: "var(--gray-100)" }} />
+                </div>
+                <div style={{ marginBottom: "var(--spacing-4)" }}>
+                  <label>Store Slug</label>
+                  <input type="text" value={store?.slug || ""} readOnly style={{ background: "var(--gray-100)" }} />
+                </div>
+                <div style={{ marginBottom: "var(--spacing-4)" }}>
+                  <label>Contact Email</label>
+                  <input type="email" value={store?.contactEmail || ""} readOnly style={{ background: "var(--gray-100)" }} />
+                </div>
+              </div>
             </div>
           )}
         </div>
