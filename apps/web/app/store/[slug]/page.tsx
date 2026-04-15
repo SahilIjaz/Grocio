@@ -60,10 +60,15 @@ export default function StorePage() {
     .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const addToCart = (productId: string) => {
-    setCart((prev) => ({
-      ...prev,
-      [productId]: (prev[productId] || 0) + 1,
-    }));
+    setCart((prev) => {
+      const updated = {
+        ...prev,
+        [productId]: (prev[productId] || 0) + 1,
+      };
+      // Save cart to localStorage
+      localStorage.setItem(`cart_${slug}`, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const removeFromCart = (productId: string) => {
@@ -74,9 +79,23 @@ export default function StorePage() {
       } else {
         delete updated[productId];
       }
+      // Save cart to localStorage
+      localStorage.setItem(`cart_${slug}`, JSON.stringify(updated));
       return updated;
     });
   };
+
+  useEffect(() => {
+    // Load cart from localStorage on component mount
+    const savedCart = localStorage.getItem(`cart_${slug}`);
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch (e) {
+        console.error("Failed to load cart from localStorage");
+      }
+    }
+  }, [slug]);
 
   const cartItemCount = Object.values(cart).reduce((a, b) => a + b, 0);
   const cartTotal = filteredProducts

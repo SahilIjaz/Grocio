@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface CartItem {
   id: string;
@@ -11,20 +11,53 @@ interface CartItem {
   quantity: number;
 }
 
+interface User {
+  id: string;
+  email: string;
+  role: string;
+  firstName: string;
+  lastName: string;
+}
+
 export default function CartPage() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const slug = searchParams.get("slug") || "demo-grocery";
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("login");
   const [formData, setFormData] = useState({
-    email: "customer@example.local",
-    firstName: "John",
-    lastName: "Doe",
-    deliveryAddress: "123 Main Street, City, State 12345",
+    email: "",
+    firstName: "",
+    lastName: "",
+    password: "",
+    deliveryAddress: "",
   });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load user from localStorage on mount
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        setUser(JSON.parse(userStr));
+        // Pre-fill form with user data
+        const userData = JSON.parse(userStr);
+        setFormData((prev) => ({
+          ...prev,
+          email: userData.email,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
+        }));
+      } catch (e) {
+        console.error("Failed to load user");
+      }
+    }
+  }, []);
 
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const tax = total * 0.08;
@@ -38,6 +71,13 @@ export default function CartPage() {
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Check if user is logged in
+    if (!user) {
+      setShowAuthModal(true);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -46,7 +86,7 @@ export default function CartPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: "temp-user-id",
+          userId: user.id,
           tenantId: "demo-tenant-id",
           cartId: "temp-cart-id",
           deliveryAddress: formData.deliveryAddress,
@@ -60,11 +100,67 @@ export default function CartPage() {
 
       setSuccess(true);
       setCartItems([]);
+      localStorage.removeItem(`cart_${slug}`);
       setTimeout(() => {
         window.location.href = "/";
       }, 2500);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Checkout failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (authMode === "login") {
+        // Login
+        const response = await fetch("http://localhost:3001/api/v1/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Invalid email or password");
+        }
+
+        const userData = await response.json();
+        localStorage.setItem("user", JSON.stringify(userData));
+        setUser(userData);
+        setShowAuthModal(false);
+      } else {
+        // Signup
+        const response = await fetch("http://localhost:3001/api/v1/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password,
+            firstName: formData.firstName,
+            lastName: formData.lastName,
+            role: "customer",
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Signup failed");
+        }
+
+        const userData = await response.json();
+        localStorage.setItem("user", JSON.stringify(userData));
+        setUser(userData);
+        setShowAuthModal(false);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Authentication failed");
     } finally {
       setLoading(false);
     }
@@ -114,11 +210,159 @@ export default function CartPage() {
         </div>
       </header>
 
+      {/* Authentication Modal */}
+      {showAuthModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div className="card" style={{ maxWidth: "500px", width: "90%" }}>
+            <button
+              onClick={() => setShowAuthModal(false)}
+              style={{
+                position: "absolute",
+                top: "var(--spacing-4)",
+                right: "var(--spacing-4)",
+                background: "none",
+                border: "none",
+                fontSize: "1.5rem",
+                cursor: "pointer",
+                color: "var(--gray-600)",
+              }}
+            >
+              ✕
+            </button>
+
+            <h2 style={{ marginBottom: "var(--spacing-2)", textAlign: "center" }}>
+              {authMode === "login" ? "Sign In to Checkout" : "Create Account"}
+            </h2>
+            <p style={{ textAlign: "center", color: "var(--gray-600)", marginBottom: "var(--spacing-6)" }}>
+              {authMode === "login"
+                ? "Sign in to your account to continue checkout"
+                : "Create a new account to complete your purchase"}
+            </p>
+
+            {error && (
+              <div className="alert alert-error" style={{ marginBottom: "var(--spacing-6)" }}>
+                <span>⚠️</span>
+                <div>{error}</div>
+              </div>
+            )}
+
+            <form onSubmit={handleAuthSubmit}>
+              <div style={{ marginBottom: "var(--spacing-4)" }}>
+                <label htmlFor="auth-email">Email Address</label>
+                <input
+                  id="auth-email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+
+              {authMode === "signup" && (
+                <>
+                  <div className="grid" style={{ gridTemplateColumns: "1fr 1fr", gap: "var(--spacing-3)", marginBottom: "var(--spacing-4)" }}>
+                    <div>
+                      <label htmlFor="auth-firstName">First Name</label>
+                      <input
+                        id="auth-firstName"
+                        type="text"
+                        value={formData.firstName}
+                        onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label htmlFor="auth-lastName">Last Name</label>
+                      <input
+                        id="auth-lastName"
+                        type="text"
+                        value={formData.lastName}
+                        onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                        required
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              <div style={{ marginBottom: "var(--spacing-6)" }}>
+                <label htmlFor="auth-password">Password</label>
+                <input
+                  id="auth-password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  placeholder={authMode === "login" ? "••••••••" : "Create a password"}
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary"
+                style={{
+                  width: "100%",
+                  padding: "var(--spacing-3)",
+                  marginBottom: "var(--spacing-4)",
+                }}
+              >
+                {loading ? "Processing..." : authMode === "login" ? "Sign In" : "Create Account"}
+              </button>
+            </form>
+
+            <div style={{ textAlign: "center" }}>
+              <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-2)" }}>
+                {authMode === "login" ? "Don't have an account?" : "Already have an account?"}
+              </p>
+              <button
+                onClick={() => {
+                  setAuthMode(authMode === "login" ? "signup" : "login");
+                  setError(null);
+                  setFormData({ ...formData, password: "" });
+                }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "var(--primary)",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                  fontSize: "1rem",
+                }}
+              >
+                {authMode === "login" ? "Sign Up Instead" : "Sign In Instead"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="container py-12">
         <h1 style={{ marginBottom: "var(--spacing-2)" }}>Shopping Cart & Checkout</h1>
         <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-12)", fontSize: "1.1rem" }}>
           Review your items and complete your order
         </p>
+
+        {user && (
+          <div className="alert" style={{ marginBottom: "var(--spacing-8)", background: "linear-gradient(135deg, var(--success) 0%, #10b981 100%)", border: "none", color: "white" }}>
+            <span>✅</span>
+            <div>Signed in as <strong>{user.firstName} {user.lastName}</strong> ({user.email})</div>
+          </div>
+        )}
 
         <div className="grid" style={{ gridTemplateColumns: "1fr 400px", gap: "var(--spacing-8)" }}>
           {/* Cart Items */}
@@ -251,8 +495,14 @@ export default function CartPage() {
                   cursor: loading || cartItems.length === 0 ? "not-allowed" : "pointer",
                 }}
               >
-                {loading ? "Processing..." : "Complete Order"}
+                {loading ? "Processing..." : !user ? "Sign In to Checkout" : "Complete Order"}
               </button>
+
+              {!user && (
+                <p style={{ marginTop: "var(--spacing-3)", fontSize: "0.85rem", color: "var(--gray-600)", textAlign: "center" }}>
+                  You need to sign in or create an account to checkout
+                </p>
+              )}
             </form>
 
             <Link href={`/store/${slug}`}>
