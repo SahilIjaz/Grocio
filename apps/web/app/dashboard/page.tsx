@@ -201,15 +201,19 @@ export default function DashboardPage() {
         headers: { "Content-Type": "application/json" },
       });
 
+      console.log("Delete response status:", response.status);
+
       if (!response.ok) {
-        throw new Error("Failed to delete category");
+        const errorData = await response.json();
+        console.error("Delete error:", errorData);
+        throw new Error(errorData.error || "Failed to delete category");
       }
 
       setCategories(categories.filter((cat) => cat.id !== categoryId));
       alert("✅ Category deleted successfully!");
     } catch (error) {
-      console.error("Error:", error);
-      alert("❌ Failed to delete category");
+      console.error("Delete error:", error);
+      alert(`❌ ${error instanceof Error ? error.message : "Failed to delete category"}`);
     }
   };
 

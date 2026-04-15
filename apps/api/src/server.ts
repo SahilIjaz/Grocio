@@ -185,17 +185,37 @@ app.put("/api/v1/categories/:categoryId", async (req, res) => {
 
 app.delete("/api/v1/categories/:categoryId", async (req, res) => {
   try {
-    // Delete associated products first
-    await prisma.product.deleteMany({
-      where: { categoryId: req.params.categoryId },
+    const categoryId = req.params.categoryId;
+
+    // Check if category exists
+    const category = await prisma.category.findUnique({
+      where: { id: categoryId },
     });
+
+    if (!category) {
+      return res.status(404).json({ error: "Category not found" });
+    }
+
+    // Count products in this category
+    const productCount = await prisma.product.count({
+      where: { categoryId },
+    });
+
+    console.log(`Deleting category ${categoryId} with ${productCount} products`);
+
+    // Delete associated products first
+    if (productCount > 0) {
+      await prisma.product.deleteMany({
+        where: { categoryId },
+      });
+    }
 
     // Then delete the category
-    const category = await prisma.category.delete({
-      where: { id: req.params.categoryId },
+    const deletedCategory = await prisma.category.delete({
+      where: { id: categoryId },
     });
 
-    res.json({ message: "Category deleted successfully", category });
+    res.json({ message: "Category deleted successfully", category: deletedCategory, deletedProducts: productCount });
   } catch (error) {
     console.error("Category deletion error:", error);
     res.status(500).json({ error: "Failed to delete category" });
