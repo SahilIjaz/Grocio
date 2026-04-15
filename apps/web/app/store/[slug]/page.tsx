@@ -231,35 +231,71 @@ export default function StorePage() {
                   </div>
 
                   <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
-                    {filteredProducts.map((product) => (
-                      <div key={product.id} className="product-card animate-slideIn">
-                        <div className="product-image">🥬</div>
-                        <div className="product-info">
-                          <div className="product-category">{product.category?.name || "General"}</div>
-                          <h3 className="product-name">{product.name}</h3>
-                          <p className="product-description">
-                            {product.description || "Quality product for your daily needs"}
-                          </p>
+                    {filteredProducts.map((product) => {
+                      const imageUrls = product.imageUrls ? JSON.parse(product.imageUrls) : [];
+                      const productImage = imageUrls && imageUrls.length > 0 ? imageUrls[0] : null;
 
-                          <div className="product-footer">
-                            <span className="product-price">${Number(product.price).toFixed(2)}</span>
-                            <div className="product-actions">
-                              {cart[product.id] ? (
-                                <div className="qty-control">
-                                  <button onClick={() => removeFromCart(product.id)}>−</button>
-                                  <input type="text" className="qty-display" value={cart[product.id]} readOnly />
-                                  <button onClick={() => addToCart(product.id)}>+</button>
-                                </div>
-                              ) : (
-                                <button onClick={() => addToCart(product.id)} className="btn-primary" style={{ padding: "var(--spacing-2) var(--spacing-4)" }}>
-                                  Add
-                                </button>
-                              )}
+                      return (
+                        <div key={product.id} className="product-card animate-slideIn">
+                          <div className="product-image" style={{ overflow: "hidden", backgroundColor: "var(--gray-100)" }}>
+                            {productImage ? (
+                              <img
+                                src={productImage}
+                                alt={product.name}
+                                style={{
+                                  width: "100%",
+                                  height: "100%",
+                                  objectFit: "cover",
+                                  display: "block",
+                                }}
+                                onError={(e) => {
+                                  // Fallback to emoji if image fails to load
+                                  e.currentTarget.style.display = "none";
+                                  e.currentTarget.parentElement!.textContent =
+                                    product.category?.name === "Produce"
+                                      ? "🥕"
+                                      : product.category?.name === "Dairy"
+                                        ? "🥛"
+                                        : "🥩";
+                                }}
+                              />
+                            ) : (
+                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "3rem" }}>
+                                {product.category?.name === "Produce"
+                                  ? "🥕"
+                                  : product.category?.name === "Dairy"
+                                    ? "🥛"
+                                    : "🥩"}
+                              </div>
+                            )}
+                          </div>
+                          <div className="product-info">
+                            <div className="product-category">{product.category?.name || "General"}</div>
+                            <h3 className="product-name">{product.name}</h3>
+                            <p className="product-description">
+                              {product.description || "Quality product for your daily needs"}
+                            </p>
+
+                            <div className="product-footer">
+                              <span className="product-price">${Number(product.price).toFixed(2)}</span>
+                              <div className="product-actions">
+                                {cart[product.id] ? (
+                                  <div className="qty-control">
+                                    <button onClick={() => removeFromCart(product.id)}>−</button>
+                                    <input type="text" className="qty-display" value={cart[product.id]} readOnly />
+                                    <button onClick={() => addToCart(product.id)}>+</button>
+                                  </div>
+                                ) : (
+                                  <button onClick={() => addToCart(product.id)} className="btn-primary" style={{ padding: "var(--spacing-2) var(--spacing-4)" }}>
+                                    Add
+                                  </button>
+                                )}
+                              </div>
                             </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
 
                   {/* Cart Summary Floating Card */}

@@ -200,7 +200,10 @@ async function main(): Promise<void> {
           isActive: true,
           isFeatured: true,
           tags: JSON.stringify(["organic", "fresh", "local"]),
-          imageUrls: JSON.stringify([]),
+          imageUrls: JSON.stringify([
+            "https://images.unsplash.com/photo-1560806887-1295a3a58f35?w=500&h=500&fit=crop",
+            "https://images.unsplash.com/photo-1579113800547-7379633a76d7?w=500&h=500&fit=crop"
+          ]),
         },
       }),
       prisma.product.upsert({
@@ -224,7 +227,10 @@ async function main(): Promise<void> {
           isActive: true,
           isFeatured: true,
           tags: JSON.stringify(["dairy", "fresh"]),
-          imageUrls: JSON.stringify([]),
+          imageUrls: JSON.stringify([
+            "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=500&h=500&fit=crop",
+            "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=500&h=500&fit=crop"
+          ]),
         },
       }),
       prisma.product.upsert({
@@ -247,7 +253,10 @@ async function main(): Promise<void> {
           unit: "lb",
           isActive: true,
           tags: JSON.stringify(["fresh", "meat"]),
-          imageUrls: JSON.stringify([]),
+          imageUrls: JSON.stringify([
+            "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=500&h=500&fit=crop",
+            "https://images.unsplash.com/photo-1598103442097-8b74394b95c6?w=500&h=500&fit=crop"
+          ]),
         },
       }),
     ]);
