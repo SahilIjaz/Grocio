@@ -60,13 +60,25 @@ export default function StorePage() {
     .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
   const addToCart = (productId: string) => {
+    const product = products.find((p) => p.id === productId);
+    if (!product) return;
+
     setCart((prev) => {
       const updated = {
         ...prev,
         [productId]: (prev[productId] || 0) + 1,
       };
-      // Save cart to localStorage
-      localStorage.setItem(`cart_${slug}`, JSON.stringify(updated));
+      // Save cart to localStorage with product details
+      const cartWithProducts = Object.entries(updated).map(([pId, qty]) => {
+        const prod = products.find((p) => p.id === pId);
+        return {
+          id: pId,
+          name: prod?.name || "Unknown",
+          price: Number(prod?.price || 0),
+          quantity: qty,
+        };
+      });
+      localStorage.setItem(`cart_${slug}`, JSON.stringify(cartWithProducts));
       return updated;
     });
   };
@@ -79,8 +91,17 @@ export default function StorePage() {
       } else {
         delete updated[productId];
       }
-      // Save cart to localStorage
-      localStorage.setItem(`cart_${slug}`, JSON.stringify(updated));
+      // Save cart to localStorage with product details
+      const cartWithProducts = Object.entries(updated).map(([pId, qty]) => {
+        const prod = products.find((p) => p.id === pId);
+        return {
+          id: pId,
+          name: prod?.name || "Unknown",
+          price: Number(prod?.price || 0),
+          quantity: qty,
+        };
+      });
+      localStorage.setItem(`cart_${slug}`, JSON.stringify(cartWithProducts));
       return updated;
     });
   };

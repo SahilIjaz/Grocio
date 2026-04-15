@@ -39,6 +39,32 @@ export default function CartPage() {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem(`cart_${slug}`);
+    if (savedCart) {
+      try {
+        const cartData = JSON.parse(savedCart);
+        // Handle both old format (object) and new format (array)
+        if (Array.isArray(cartData)) {
+          setCartItems(cartData);
+        } else {
+          // Convert old format to new format if needed
+          setCartItems(
+            Object.entries(cartData).map(([id, qty]) => ({
+              id,
+              name: `Product ${id}`,
+              price: 0,
+              quantity: qty as number,
+            }))
+          );
+        }
+      } catch (e) {
+        console.error("Failed to load cart from localStorage");
+      }
+    }
+  }, [slug]);
+
   // Load user from localStorage on mount
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -109,6 +135,14 @@ export default function CartPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const removeFromCart = (itemId: string) => {
+    setCartItems((prev) => {
+      const updated = prev.filter((item) => item.id !== itemId);
+      localStorage.setItem(`cart_${slug}`, JSON.stringify(updated));
+      return updated;
+    });
   };
 
   const handleAuthSubmit = async (e: React.FormEvent) => {
@@ -390,8 +424,22 @@ export default function CartPage() {
                         Unit Price: ${item.price.toFixed(2)}
                       </p>
                     </div>
-                    <div style={{ textAlign: "right" }}>
+                    <div style={{ textAlign: "right", display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "var(--spacing-3)" }}>
                       <div className="cart-item-price">${(item.price * item.quantity).toFixed(2)}</div>
+                      <button
+                        onClick={() => removeFromCart(item.id)}
+                        style={{
+                          background: "var(--danger)",
+                          color: "white",
+                          border: "none",
+                          padding: "var(--spacing-2) var(--spacing-3)",
+                          borderRadius: "var(--radius-base)",
+                          cursor: "pointer",
+                          fontSize: "0.85rem",
+                        }}
+                      >
+                        Remove
+                      </button>
                     </div>
                   </div>
                 ))}
