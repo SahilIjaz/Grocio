@@ -618,6 +618,104 @@ export default function AdminPage() {
             </div>
           )}
 
+          {activeTab === "reports" && (
+            <div>
+              <h1 style={{ marginBottom: "var(--spacing-8)" }}>System Reports</h1>
+
+              <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))", gap: "var(--spacing-6)", marginBottom: "var(--spacing-8)" }}>
+                {[
+                  {
+                    title: "User Growth Report",
+                    description: "Track user registrations and growth trends",
+                    icon: "📈",
+                    action: "Generate Report",
+                  },
+                  {
+                    title: "Revenue Report",
+                    description: "Detailed revenue breakdown by store and period",
+                    icon: "💰",
+                    action: "Generate Report",
+                  },
+                  {
+                    title: "Order Analytics",
+                    description: "Order volume, trends, and customer behavior",
+                    icon: "🛒",
+                    action: "Generate Report",
+                  },
+                  {
+                    title: "Store Performance",
+                    description: "Performance metrics for each store",
+                    icon: "🏪",
+                    action: "Generate Report",
+                  },
+                  {
+                    title: "User Activity",
+                    description: "User engagement and activity patterns",
+                    icon: "👥",
+                    action: "Generate Report",
+                  },
+                  {
+                    title: "System Health",
+                    description: "Platform performance and health metrics",
+                    icon: "⚕️",
+                    action: "View Status",
+                  },
+                ].map((report, idx) => (
+                  <div key={idx} className="card" style={{ display: "flex", flexDirection: "column" }}>
+                    <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-4)" }}>{report.icon}</div>
+                    <h4 style={{ marginBottom: "var(--spacing-2)", color: "var(--gray-900)" }}>{report.title}</h4>
+                    <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-6)", flex: 1 }}>{report.description}</p>
+                    <button
+                      style={{
+                        padding: "var(--spacing-3) var(--spacing-4)",
+                        background: "var(--primary)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "var(--radius-base)",
+                        cursor: "pointer",
+                        fontWeight: 600,
+                        transition: "all var(--transition-fast)",
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = "var(--primary-dark)";
+                        e.currentTarget.style.transform = "translateY(-2px)";
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = "var(--primary)";
+                        e.currentTarget.style.transform = "translateY(0)";
+                      }}
+                    >
+                      {report.action}
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Sample Report Data */}
+              <div className="card">
+                <h3 style={{ marginBottom: "var(--spacing-6)" }}>System Summary Report</h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "var(--spacing-6)", marginBottom: "var(--spacing-8)" }}>
+                  {[
+                    { label: "Total Users", value: analytics?.totalUsers || 0, change: "+12.5%", trend: "up" },
+                    { label: "Total Stores", value: analytics?.totalTenants || 0, change: "+5%", trend: "up" },
+                    { label: "Total Orders", value: analytics?.totalOrders || 0, change: "+25%", trend: "up" },
+                    { label: "Revenue", value: `$${(analytics?.totalRevenue || 0).toFixed(2)}`, change: "+15.3%", trend: "up" },
+                  ].map((metric, idx) => (
+                    <div key={idx} style={{ padding: "var(--spacing-4)", background: "var(--gray-50)", borderRadius: "var(--radius-base)" }}>
+                      <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-2)", fontSize: "0.9rem" }}>{metric.label}</p>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "var(--spacing-2)" }}>
+                        <h4 style={{ fontSize: "1.8rem", margin: 0, fontWeight: 700 }}>{metric.value}</h4>
+                        <span style={{ color: metric.trend === "up" ? "#10b981" : "#ef4444", fontWeight: 600, fontSize: "0.9rem" }}>
+                          {metric.trend === "up" ? "↑" : "↓"} {metric.change}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {activeTab === "settings" && (
             <div>
               <h1 style={{ marginBottom: "var(--spacing-8)" }}>System Settings</h1>
