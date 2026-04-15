@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 interface CartItem {
   id: string;
@@ -21,7 +21,6 @@ interface User {
 
 export default function CartPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const slug = searchParams.get("slug") || "demo-grocery";
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
