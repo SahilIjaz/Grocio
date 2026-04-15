@@ -10,7 +10,8 @@ interface Product {
   description: string;
   price: string | number;
   sku: string;
-  category: {
+  imageUrls?: string | string[];
+  category?: {
     name: string;
   };
 }
@@ -232,7 +233,10 @@ export default function StorePage() {
 
                   <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
                     {filteredProducts.map((product) => {
-                      const imageUrls = product.imageUrls ? JSON.parse(product.imageUrls) : [];
+                      let imageUrls: string[] = [];
+                      if (product.imageUrls) {
+                        imageUrls = typeof product.imageUrls === "string" ? JSON.parse(product.imageUrls) : product.imageUrls;
+                      }
                       const productImage = imageUrls && imageUrls.length > 0 ? imageUrls[0] : null;
 
                       return (
