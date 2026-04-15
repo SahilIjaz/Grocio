@@ -624,8 +624,8 @@ export default function DashboardPage() {
 
               {showAddProduct && categories.length > 0 && (
                 <div className="card" style={{ marginBottom: "var(--spacing-8)", background: "#f0fdf4", borderLeft: "4px solid var(--success)" }}>
-                  <h3 style={{ marginBottom: "var(--spacing-4)" }}>Add New Product</h3>
-                  <form onSubmit={handleAddProduct}>
+                  <h3 style={{ marginBottom: "var(--spacing-4)" }}>{editingProduct ? "✏️ Edit Product" : "➕ Add New Product"}</h3>
+                  <form onSubmit={editingProduct ? handleSaveProduct : handleAddProduct}>
                     <div style={{ marginBottom: "var(--spacing-4)", position: "relative" }}>
                       <label>Category *</label>
                       <input
@@ -770,12 +770,13 @@ export default function DashboardPage() {
                     </div>
 
                     <div style={{ display: "flex", gap: "var(--spacing-4)" }}>
-                      <button type="submit" className="btn-primary">Save Product</button>
+                      <button type="submit" className="btn-primary">{editingProduct ? "Update Product" : "Save Product"}</button>
                       <button
                         type="button"
                         className="btn-secondary"
                         onClick={() => {
                           setShowAddProduct(false);
+                          setEditingProduct(null);
                           setProductForm({ name: "", price: "", stock: "", description: "", categoryId: "" });
                           setProductImages([]);
                           setProductImagePreviews([]);
@@ -829,6 +830,7 @@ export default function DashboardPage() {
                         <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Product Name</th>
                         <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Price</th>
                         <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Stock</th>
+                        <th style={{ textAlign: "center", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -840,6 +842,38 @@ export default function DashboardPage() {
                             <span style={{ background: "#dcfce7", color: "#166534", padding: "var(--spacing-2) var(--spacing-3)", borderRadius: "var(--radius-sm)", fontSize: "0.9rem", fontWeight: 600 }}>
                               {product.stockQuantity}
                             </span>
+                          </td>
+                          <td style={{ padding: "var(--spacing-4)", textAlign: "center", display: "flex", gap: "var(--spacing-2)", justifyContent: "center" }}>
+                            <button
+                              onClick={() => startEditProduct(product)}
+                              style={{
+                                background: "var(--primary)",
+                                color: "white",
+                                border: "none",
+                                padding: "var(--spacing-2) var(--spacing-3)",
+                                borderRadius: "var(--radius-base)",
+                                cursor: "pointer",
+                                fontSize: "0.85rem",
+                                fontWeight: 600,
+                              }}
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              onClick={() => handleDeleteProduct(product.id)}
+                              style={{
+                                background: "#fee2e2",
+                                color: "var(--danger)",
+                                border: "none",
+                                padding: "var(--spacing-2) var(--spacing-3)",
+                                borderRadius: "var(--radius-base)",
+                                cursor: "pointer",
+                                fontSize: "0.85rem",
+                                fontWeight: 600,
+                              }}
+                            >
+                              🗑️ Delete
+                            </button>
                           </td>
                         </tr>
                       ))}
@@ -1004,7 +1038,9 @@ export default function DashboardPage() {
                           <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Order ID</th>
                           <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Customer</th>
                           <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Amount</th>
+                          <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Status</th>
                           <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Date</th>
+                          <th style={{ textAlign: "center", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -1017,14 +1053,99 @@ export default function DashboardPage() {
                             <td style={{ padding: "var(--spacing-4)", color: "var(--primary)", fontWeight: 600 }}>
                               ${Number(order.totalAmount).toFixed(2)}
                             </td>
-                            <td style={{ padding: "var(--spacing-4)", color: "var(--gray-600)" }}>
+                            <td style={{ padding: "var(--spacing-4)" }}>
+                              <span
+                                style={{
+                                  display: "inline-block",
+                                  background: order.status === "pending" ? "#fef3c7" : order.status === "confirmed" ? "#dbeafe" : order.status === "shipped" ? "#ede9fe" : "#dcfce7",
+                                  color: order.status === "pending" ? "#b45309" : order.status === "confirmed" ? "#1e40af" : order.status === "shipped" ? "#6d28d9" : "#166534",
+                                  padding: "var(--spacing-1) var(--spacing-3)",
+                                  borderRadius: "var(--radius-sm)",
+                                  fontSize: "0.85rem",
+                                  fontWeight: 600,
+                                  textTransform: "capitalize",
+                                }}
+                              >
+                                {order.status}
+                              </span>
+                            </td>
+                            <td style={{ padding: "var(--spacing-4)", color: "var(--gray-600)", fontSize: "0.9rem" }}>
                               {new Date(order.createdAt).toLocaleDateString()}
+                            </td>
+                            <td style={{ padding: "var(--spacing-4)", textAlign: "center", display: "flex", gap: "var(--spacing-2)", justifyContent: "center", fontSize: "0.85rem" }}>
+                              <button
+                                onClick={() => startEditOrder(order)}
+                                style={{
+                                  background: "var(--primary)",
+                                  color: "white",
+                                  border: "none",
+                                  padding: "var(--spacing-2) var(--spacing-3)",
+                                  borderRadius: "var(--radius-base)",
+                                  cursor: "pointer",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                📝 Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteOrder(order.id)}
+                                style={{
+                                  background: "#fee2e2",
+                                  color: "var(--danger)",
+                                  border: "none",
+                                  padding: "var(--spacing-2) var(--spacing-3)",
+                                  borderRadius: "var(--radius-base)",
+                                  cursor: "pointer",
+                                  fontWeight: 600,
+                                }}
+                              >
+                                🗑️ Delete
+                              </button>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
+
+                  {/* Order Status Update Modal */}
+                  {editingOrder && (
+                    <div style={{ marginTop: "var(--spacing-8)", padding: "var(--spacing-6)", background: "#f0fdf4", borderRadius: "var(--radius-base)", borderLeft: "4px solid var(--success)" }}>
+                      <h4 style={{ marginBottom: "var(--spacing-4)" }}>Update Order Status for {editingOrder.orderNumber}</h4>
+                      <div style={{ marginBottom: "var(--spacing-4)" }}>
+                        <label>Status</label>
+                        <select
+                          value={orderStatusUpdate}
+                          onChange={(e) => setOrderStatusUpdate(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "var(--spacing-3) var(--spacing-4)",
+                            border: "1px solid var(--gray-300)",
+                            borderRadius: "var(--radius-base)",
+                            fontSize: "1rem",
+                            marginTop: "var(--spacing-2)",
+                          }}
+                        >
+                          <option value="pending">Pending</option>
+                          <option value="confirmed">Confirmed</option>
+                          <option value="shipped">Shipped</option>
+                          <option value="delivered">Delivered</option>
+                          <option value="cancelled">Cancelled</option>
+                        </select>
+                      </div>
+                      <div style={{ display: "flex", gap: "var(--spacing-4)" }}>
+                        <button onClick={handleUpdateOrderStatus} className="btn-primary">
+                          Update Status
+                        </button>
+                        <button
+                          onClick={() => setEditingOrder(null)}
+                          className="btn-secondary"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
