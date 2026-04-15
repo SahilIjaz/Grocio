@@ -92,12 +92,15 @@ export default function DashboardPage() {
 
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tenantSlug) return;
+    if (!tenantSlug || !productForm.categoryId) {
+      alert("⚠️ Please select a category");
+      return;
+    }
 
     try {
       // This would need an API endpoint to create products
       // For now, just show success and refresh
-      setProductForm({ name: "", price: "", stock: "", description: "" });
+      setProductForm({ name: "", price: "", stock: "", description: "", categoryId: "" });
       setShowAddProduct(false);
       alert("✅ Product added! (You can implement full API integration)");
     } catch (error) {
@@ -258,12 +261,8 @@ export default function DashboardPage() {
                     <div style={{ marginBottom: "var(--spacing-4)" }}>
                       <label>Category *</label>
                       <select
-                        value={productForm.name ? productForm.name.split("|")[1] || "" : ""}
-                        onChange={(e) => {
-                          if (e.target.value) {
-                            setProductForm({...productForm});
-                          }
-                        }}
+                        value={productForm.categoryId}
+                        onChange={(e) => setProductForm({...productForm, categoryId: e.target.value})}
                         required
                         style={{ width: "100%", padding: "var(--spacing-3) var(--spacing-4)", border: "2px solid var(--gray-200)", borderRadius: "var(--radius-base)", fontSize: "1rem" }}
                       >
