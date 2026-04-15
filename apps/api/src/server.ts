@@ -103,6 +103,50 @@ app.get("/api/v1/tenants/:slug", async (req, res) => {
   }
 });
 
+app.put("/api/v1/tenants/:slug", async (req, res) => {
+  try {
+    const { name, logoUrl, address, contactEmail, contactPhone } = req.body;
+    const tenant = await prisma.tenant.update({
+      where: { slug: req.params.slug },
+      data: {
+        name: name || undefined,
+        logoUrl: logoUrl || undefined,
+        address: address || undefined,
+        contactEmail: contactEmail || undefined,
+        contactPhone: contactPhone || undefined,
+      },
+    });
+    res.json(tenant);
+  } catch (error) {
+    console.error("Tenant update error:", error);
+    res.status(500).json({ error: "Failed to update tenant" });
+  }
+});
+
+app.get("/api/v1/tenants/:slug/orders", async (req, res) => {
+  try {
+    const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.slug } });
+    if (!tenant) return res.status(404).json({ error: "Tenant not found" });
+
+    const orders = await prisma.order.findMany({
+      where: { tenantId: tenant.id },
+      include: { items: true, user: true },
+      orderBy: { createdAt: "desc" },
+    });
+
+    const stats = {
+      totalOrders: orders.length,
+      totalRevenue: orders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0),
+      orders,
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error("Get orders error:", error);
+    res.status(500).json({ error: "Failed to fetch orders" });
+  }
+});
+
 app.get("/api/v1/tenants/:tenantSlug/products", async (req, res) => {
   try {
     const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.tenantSlug } });

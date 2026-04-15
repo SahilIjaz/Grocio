@@ -27,6 +27,28 @@ interface Category {
   description: string;
 }
 
+interface Store {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  address: string | null;
+  contactEmail: string | null;
+  contactPhone: string | null;
+}
+
+interface Order {
+  id: string;
+  orderNumber: string;
+  totalAmount: string;
+  createdAt: string;
+  user: {
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -34,7 +56,12 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [store, setStore] = useState<Store | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [totalRevenue, setTotalRevenue] = useState(0);
   const [tenantSlug, setTenantSlug] = useState("");
+  const [storeLogoPreview, setStoreLogoPreview] = useState<string>("");
+  const [storeLogoFile, setStoreLogoFile] = useState<File | null>(null);
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [productForm, setProductForm] = useState({ name: "", price: "", stock: "", description: "", categoryId: "" });
