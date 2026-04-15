@@ -29,7 +29,7 @@ model Tenant {
   contactEmail  String
   contactPhone  String?
   address       String?
-  settings      Json           @default("{}")
+  settings      String         @default("{}")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -195,7 +195,7 @@ model Order {
   tenantId          String
   userId            String
   orderNumber       String
-  status            OrderStatus    @default(pending)
+  status            String         @default("pending")
   subtotal          Decimal
   tax               Decimal        @default(0)
   shippingCost      Decimal        @default(0)
