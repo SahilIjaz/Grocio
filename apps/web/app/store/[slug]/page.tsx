@@ -114,7 +114,20 @@ export default function StorePage() {
     const savedCart = localStorage.getItem(`cart_${slug}`);
     if (savedCart) {
       try {
-        setCart(JSON.parse(savedCart));
+        const cartData = JSON.parse(savedCart);
+        // Convert array format back to object format for this component
+        if (Array.isArray(cartData)) {
+          const cartObj: Record<string, number> = {};
+          cartData.forEach((item: any) => {
+            if (item.id && item.quantity) {
+              cartObj[item.id] = item.quantity;
+            }
+          });
+          setCart(cartObj);
+        } else {
+          // Already in object format
+          setCart(cartData);
+        }
       } catch (e) {
         console.error("Failed to load cart from localStorage");
       }

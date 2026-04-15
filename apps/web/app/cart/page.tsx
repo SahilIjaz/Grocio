@@ -39,19 +39,20 @@ export default function CartPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
-  // Load cart from localStorage on mount
+  // Load cart from localStorage on mount (client side only)
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
+    setMounted(true);
     const savedCart = localStorage.getItem(`cart_${slug}`);
     if (savedCart) {
       try {
         const cartData = JSON.parse(savedCart);
         // Handle both old format (object) and new format (array)
         if (Array.isArray(cartData)) {
-          setCartItems(cartData.filter((item) => item.id && item.name && item.price !== undefined));
-        } else {
+          const validItems = cartData.filter((item: any) => item && item.id && item.name && item.price !== undefined && item.quantity);
+          setCartItems(validItems as CartItem[]);
+        } else if (typeof cartData === "object") {
           // Convert old format to new format if needed
           setCartItems(
             Object.entries(cartData).map(([id, qty]) => ({
@@ -228,6 +229,29 @@ export default function CartPage() {
             <Link href="/">
               <button className="btn-primary">Back to Home</button>
             </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (!mounted) {
+    return (
+      <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
+        <header>
+          <div className="container">
+            <Link href="/">
+              <div className="logo">
+                <span>🛒</span>
+                <span>Grocio</span>
+              </div>
+            </Link>
+          </div>
+        </header>
+        <div className="container py-12">
+          <div className="empty-state">
+            <div className="empty-state-icon">⏳</div>
+            <h3 className="empty-state-title">Loading Cart...</h3>
           </div>
         </div>
       </main>
