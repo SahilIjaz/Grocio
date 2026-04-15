@@ -128,10 +128,23 @@ app.get("/api/v1/tenants/:tenantSlug/categories", async (req, res) => {
 app.post("/api/v1/tenants/:tenantSlug/categories", async (req, res) => {
   try {
     const { name, description } = req.body;
+    if (!name) return res.status(400).json({ error: "Category name is required" });
+
     const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.tenantSlug } });
     if (!tenant) return res.status(404).json({ error: "Tenant not found" });
 
-    const slug = name.toLowerCase().replace(/\s+/g, "-");
+    let slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+
+    // Check if category with this slug already exists
+    const existing = await prisma.category.findFirst({
+      where: { tenantId: tenant.id, slug },
+    });
+
+    if (existing) {
+      // Add random suffix to make it unique
+      slug = `${slug}-${Date.now().toString().slice(-4)}`;
+    }
+
     const category = await prisma.category.create({
       data: {
         tenantId: tenant.id,
@@ -150,14 +163,69 @@ app.post("/api/v1/tenants/:tenantSlug/categories", async (req, res) => {
   }
 });
 
+app.put("/api/v1/categories/:categoryId", async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    if (!name) return res.status(400).json({ error: "Category name is required" });
+
+    const category = await prisma.category.update({
+      where: { id: req.params.categoryId },
+      data: {
+        name,
+        description: description || "",
+      },
+    });
+
+    res.json(category);
+  } catch (error) {
+    console.error("Category update error:", error);
+    res.status(500).json({ error: "Failed to update category" });
+  }
+});
+
+app.delete("/api/v1/categories/:categoryId", async (req, res) => {
+  try {
+    // Delete associated products first
+    await prisma.product.deleteMany({
+      where: { categoryId: req.params.categoryId },
+    });
+
+    // Then delete the category
+    const category = await prisma.category.delete({
+      where: { id: req.params.categoryId },
+    });
+
+    res.json({ message: "Category deleted successfully", category });
+  } catch (error) {
+    console.error("Category deletion error:", error);
+    res.status(500).json({ error: "Failed to delete category" });
+  }
+});
+
 app.post("/api/v1/tenants/:tenantSlug/products", async (req, res) => {
   try {
-    const { name, description, price, stockQuantity, categoryId } = req.body;
+    const { name, description, price, stockQuantity, categoryId, imageUrls = [] } = req.body;
+
+    if (!name || !price || !categoryId) {
+      return res.status(400).json({ error: "Name, price, and category are required" });
+    }
+
     const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.tenantSlug } });
     if (!tenant) return res.status(404).json({ error: "Tenant not found" });
 
-    const slug = name.toLowerCase().replace(/\s+/g, "-");
-    const sku = `${slug.toUpperCase()}-${Date.now()}`;
+    let slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+
+    // Check if product with this slug already exists
+    const existing = await prisma.product.findFirst({
+      where: { tenantId: tenant.id, slug },
+    });
+
+    if (existing) {
+      // Add random suffix to make it unique
+      slug = `${slug}-${Date.now().toString().slice(-4)}`;
+    }
+
+    const sku = `${slug.toUpperCase()}-${Date.now().toString().slice(-6)}`;
 
     const product = await prisma.product.create({
       data: {
@@ -168,10 +236,10 @@ app.post("/api/v1/tenants/:tenantSlug/products", async (req, res) => {
         description: description || "",
         sku,
         price: price.toString(),
-        stockQuantity: parseInt(stockQuantity),
+        stockQuantity: parseInt(stockQuantity) || 0,
         unit: "unit",
         isActive: true,
-        imageUrls: "[]",
+        imageUrls: JSON.stringify(Array.isArray(imageUrls) ? imageUrls : []),
         tags: "[]",
       },
       include: { category: true },

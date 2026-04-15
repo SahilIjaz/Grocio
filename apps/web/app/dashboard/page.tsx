@@ -38,9 +38,12 @@ export default function DashboardPage() {
   const [showAddProduct, setShowAddProduct] = useState(false);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [productForm, setProductForm] = useState({ name: "", price: "", stock: "", description: "", categoryId: "" });
+  const [productImages, setProductImages] = useState<File[]>([]);
+  const [productImagePreviews, setProductImagePreviews] = useState<string[]>([]);
   const [categoryForm, setCategoryForm] = useState({ name: "", description: "" });
   const [categorySearch, setCategorySearch] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<string | null>(null);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -99,52 +102,140 @@ export default function DashboardPage() {
       return;
     }
 
+    if (!productForm.name || !productForm.price) {
+      alert("⚠️ Please fill in all required fields");
+      return;
+    }
+
     try {
+      const imageUrls = productImagePreviews.length > 0 ? productImagePreviews : [];
+
       const response = await fetch(`http://localhost:3001/api/v1/tenants/${tenantSlug}/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(productForm),
+        body: JSON.stringify({
+          name: productForm.name,
+          description: productForm.description,
+          price: parseFloat(productForm.price),
+          stockQuantity: parseInt(productForm.stock) || 0,
+          categoryId: productForm.categoryId,
+          imageUrls,
+        }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create product");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create product");
       }
 
       const newProduct = await response.json();
       setProducts([...products, newProduct]);
       setProductForm({ name: "", price: "", stock: "", description: "", categoryId: "" });
+      setProductImages([]);
+      setProductImagePreviews([]);
+      setCategorySearch("");
       setShowAddProduct(false);
-      alert("✅ Product created successfully!");
+      alert("✅ Product created successfully with " + (imageUrls.length > 0 ? imageUrls.length + " image(s)" : "no images") + "!");
     } catch (error) {
       console.error("Error:", error);
-      alert("❌ Failed to create product");
+      alert(`❌ ${error instanceof Error ? error.message : "Failed to create product"}`);
     }
   };
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tenantSlug || !categoryForm.name) return;
+    if (!categoryForm.name) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/tenants/${tenantSlug}/categories`, {
-        method: "POST",
+      if (editingCategory) {
+        // Update existing category
+        const response = await fetch(`http://localhost:3001/api/v1/categories/${editingCategory}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(categoryForm),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to update category");
+        }
+
+        const updatedCategory = await response.json();
+        setCategories(categories.map((cat) => (cat.id === editingCategory ? updatedCategory : cat)));
+        alert("✅ Category updated successfully!");
+      } else {
+        // Create new category
+        if (!tenantSlug) return;
+
+        const response = await fetch(`http://localhost:3001/api/v1/tenants/${tenantSlug}/categories`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(categoryForm),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to create category");
+        }
+
+        const newCategory = await response.json();
+        setCategories([...categories, newCategory]);
+        alert("✅ Category created successfully!");
+      }
+
+      setCategoryForm({ name: "", description: "" });
+      setShowAddCategory(false);
+      setEditingCategory(null);
+    } catch (error) {
+      console.error("Error:", error);
+      alert("❌ Failed to save category");
+    }
+  };
+
+  const handleDeleteCategory = async (categoryId: string) => {
+    if (!confirm("⚠️ Are you sure? This will delete the category and all associated products.")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/v1/categories/${categoryId}`, {
+        method: "DELETE",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(categoryForm),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create category");
+        throw new Error("Failed to delete category");
       }
 
-      const newCategory = await response.json();
-      setCategories([...categories, newCategory]);
-      setCategoryForm({ name: "", description: "" });
-      setShowAddCategory(false);
-      alert("✅ Category created successfully!");
+      setCategories(categories.filter((cat) => cat.id !== categoryId));
+      alert("✅ Category deleted successfully!");
     } catch (error) {
       console.error("Error:", error);
-      alert("❌ Failed to create category");
+      alert("❌ Failed to delete category");
     }
+  };
+
+  const startEditCategory = (category: Category) => {
+    setCategoryForm({ name: category.name, description: category.description });
+    setEditingCategory(category.id);
+    setShowAddCategory(true);
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setProductImages([...productImages, ...files]);
+
+    // Create previews
+    files.forEach((file) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProductImagePreviews((prev) => [...prev, reader.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeImage = (index: number) => {
+    setProductImages(productImages.filter((_, i) => i !== index));
+    setProductImagePreviews(productImagePreviews.filter((_, i) => i !== index));
   };
 
   if (loading) {
@@ -357,9 +448,89 @@ export default function DashboardPage() {
                       <label>Description</label>
                       <textarea value={productForm.description} onChange={(e) => setProductForm({...productForm, description: e.target.value})} />
                     </div>
+
+                    <div style={{ marginBottom: "var(--spacing-6)", paddingBottom: "var(--spacing-6)", borderBottom: "2px solid var(--gray-200)" }}>
+                      <label style={{ display: "block", marginBottom: "var(--spacing-3)" }}>📸 Product Images</label>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageSelect}
+                        style={{
+                          display: "block",
+                          width: "100%",
+                          padding: "var(--spacing-3) var(--spacing-4)",
+                          border: "2px dashed var(--primary)",
+                          borderRadius: "var(--radius-base)",
+                          cursor: "pointer",
+                          marginBottom: "var(--spacing-4)",
+                        }}
+                      />
+                      <p style={{ color: "var(--gray-600)", fontSize: "0.9rem", margin: 0 }}>
+                        You can select multiple images. They will be displayed as product images.
+                      </p>
+
+                      {productImagePreviews.length > 0 && (
+                        <div style={{ marginTop: "var(--spacing-4)" }}>
+                          <p style={{ fontWeight: 600, marginBottom: "var(--spacing-2)" }}>
+                            Selected Images ({productImagePreviews.length})
+                          </p>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "var(--spacing-3)" }}>
+                            {productImagePreviews.map((preview, idx) => (
+                              <div key={idx} style={{ position: "relative", borderRadius: "var(--radius-base)", overflow: "hidden", background: "var(--gray-100)" }}>
+                                <img
+                                  src={preview}
+                                  alt={`Preview ${idx + 1}`}
+                                  style={{
+                                    width: "100%",
+                                    height: "100px",
+                                    objectFit: "cover",
+                                  }}
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeImage(idx)}
+                                  style={{
+                                    position: "absolute",
+                                    top: "var(--spacing-2)",
+                                    right: "var(--spacing-2)",
+                                    background: "rgba(0, 0, 0, 0.6)",
+                                    color: "white",
+                                    border: "none",
+                                    borderRadius: "50%",
+                                    width: "24px",
+                                    height: "24px",
+                                    cursor: "pointer",
+                                    fontSize: "0.9rem",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                  }}
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
                     <div style={{ display: "flex", gap: "var(--spacing-4)" }}>
                       <button type="submit" className="btn-primary">Save Product</button>
-                      <button type="button" className="btn-secondary" onClick={() => setShowAddProduct(false)}>Cancel</button>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => {
+                          setShowAddProduct(false);
+                          setProductForm({ name: "", price: "", stock: "", description: "", categoryId: "" });
+                          setProductImages([]);
+                          setProductImagePreviews([]);
+                          setCategorySearch("");
+                        }}
+                      >
+                        Cancel
+                      </button>
                     </div>
                   </form>
                 </div>
@@ -435,10 +606,12 @@ export default function DashboardPage() {
 
               {showAddCategory && (
                 <div className="card" style={{ marginBottom: "var(--spacing-8)", background: "#f0fdf4", borderLeft: "4px solid var(--success)" }}>
-                  <h3 style={{ marginBottom: "var(--spacing-4)" }}>Add New Category</h3>
+                  <h3 style={{ marginBottom: "var(--spacing-4)" }}>
+                    {editingCategory ? "Edit Category" : "Add New Category"}
+                  </h3>
                   <form onSubmit={handleAddCategory}>
                     <div style={{ marginBottom: "var(--spacing-4)" }}>
-                      <label>Category Name</label>
+                      <label>Category Name *</label>
                       <input type="text" value={categoryForm.name} onChange={(e) => setCategoryForm({...categoryForm, name: e.target.value})} required />
                     </div>
                     <div style={{ marginBottom: "var(--spacing-4)" }}>
@@ -446,8 +619,20 @@ export default function DashboardPage() {
                       <textarea value={categoryForm.description} onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})} />
                     </div>
                     <div style={{ display: "flex", gap: "var(--spacing-4)" }}>
-                      <button type="submit" className="btn-primary">Save Category</button>
-                      <button type="button" className="btn-secondary" onClick={() => setShowAddCategory(false)}>Cancel</button>
+                      <button type="submit" className="btn-primary">
+                        {editingCategory ? "Update Category" : "Save Category"}
+                      </button>
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={() => {
+                          setShowAddCategory(false);
+                          setEditingCategory(null);
+                          setCategoryForm({ name: "", description: "" });
+                        }}
+                      >
+                        Cancel
+                      </button>
                     </div>
                   </form>
                 </div>
@@ -459,17 +644,66 @@ export default function DashboardPage() {
                     <div className="empty-state-icon">🏷️</div>
                     <h3 className="empty-state-title">No Categories Yet</h3>
                     <p className="empty-state-text">Create your first category to organize products</p>
-                    <button className="btn-primary" onClick={() => setShowAddCategory(true)}>Add Category</button>
+                    <button
+                      className="btn-primary"
+                      onClick={() => {
+                        setEditingCategory(null);
+                        setCategoryForm({ name: "", description: "" });
+                        setShowAddCategory(true);
+                      }}
+                    >
+                      Add Category
+                    </button>
                   </div>
                 </div>
               ) : (
-                <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "var(--spacing-6)" }}>
+                <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "var(--spacing-6)" }}>
                   {categories.map((cat) => (
                     <div key={cat.id} className="card">
-                      <h4 style={{ marginBottom: "var(--spacing-4)" }}>{cat.name}</h4>
-                      <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-4)", fontSize: "0.9rem" }}>
-                        {cat.description || "No description"}
+                      <h4 style={{ marginBottom: "var(--spacing-2)" }}>{cat.name}</h4>
+                      <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-6)", fontSize: "0.9rem" }}>
+                        {cat.description || "No description provided"}
                       </p>
+                      <div style={{ display: "flex", gap: "var(--spacing-2)" }}>
+                        <button
+                          onClick={() => startEditCategory(cat)}
+                          style={{
+                            flex: 1,
+                            padding: "var(--spacing-2) var(--spacing-3)",
+                            background: "var(--primary)",
+                            color: "white",
+                            border: "none",
+                            borderRadius: "var(--radius-base)",
+                            cursor: "pointer",
+                            fontWeight: 600,
+                            fontSize: "0.9rem",
+                            transition: "all var(--transition-fast)",
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = "var(--primary-dark)"}
+                          onMouseLeave={(e) => e.currentTarget.style.background = "var(--primary)"}
+                        >
+                          ✏️ Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(cat.id)}
+                          style={{
+                            flex: 1,
+                            padding: "var(--spacing-2) var(--spacing-3)",
+                            background: "#fee2e2",
+                            color: "var(--danger)",
+                            border: "none",
+                            borderRadius: "var(--radius-base)",
+                            cursor: "pointer",
+                            fontWeight: 600,
+                            fontSize: "0.9rem",
+                            transition: "all var(--transition-fast)",
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.background = "#fecaca"}
+                          onMouseLeave={(e) => e.currentTarget.style.background = "#fee2e2"}
+                        >
+                          🗑️ Delete
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
