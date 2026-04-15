@@ -43,6 +43,13 @@ export default function StorePage() {
           fetch(`http://localhost:3001/api/v1/tenants/${slug}/categories`),
         ]);
 
+        if (!productsRes.ok) {
+          throw new Error(`Products API error: ${productsRes.status}`);
+        }
+        if (!categoriesRes.ok) {
+          throw new Error(`Categories API error: ${categoriesRes.status}`);
+        }
+
         const productsData = await productsRes.json();
         const categoriesData = await categoriesRes.json();
 
@@ -50,12 +57,15 @@ export default function StorePage() {
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
         setLoading(false);
       } catch (err) {
+        console.error("Fetch error:", err);
         setError(err instanceof Error ? err.message : "Failed to load products");
         setLoading(false);
       }
     };
 
-    fetchData();
+    if (slug) {
+      fetchData();
+    }
   }, [slug]);
 
   const filteredProducts = products
