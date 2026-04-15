@@ -14,45 +14,22 @@ datasource db {
 // ENUMS
 // =============================================
 
-enum UserRole {
-  super_admin
-  store_admin
-  customer
-}
-
-enum TenantStatus {
-  active
-  suspended
-  pending
-}
-
-enum OrderStatus {
-  pending
-  confirmed
-  processing
-  shipped
-  delivered
-  cancelled
-}
-
-enum AuditAction {
-  CREATE
-  UPDATE
-  DELETE
-  LOGIN
-  LOGOUT
-  ORDER_STATUS_CHANGE
-  STOCK_UPDATE
-  TENANT_SUSPEND
-}
+// Enums as strings for SQLite compatibility
 
 // =============================================
 // TENANTS
 // =============================================
 
 model Tenant {
-  id            String         @id @default(uuid())  name          String          slug          String         @unique  status        TenantStatus   @default(pending)
-  logoUrl       String?         contactEmail  String          contactPhone  String?         address       String?         settings      Json           @default("{}")
+  id            String         @id @default(uuid())
+  name          String
+  slug          String         @unique
+  status        String         @default("pending")
+  logoUrl       String?
+  contactEmail  String
+  contactPhone  String?
+  address       String?
+  settings      Json           @default("{}")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -75,7 +52,13 @@ model Tenant {
 // =============================================
 
 model User {
-  id            String         @id @default(uuid())  tenantId      String?         email         String          passwordHash  String          firstName     String          lastName      String          role          UserRole       @default(customer)
+  id            String         @id @default(uuid())
+  tenantId      String?
+  email         String
+  passwordHash  String
+  firstName     String
+  lastName      String
+  role          String         @default("customer")
   isActive      Boolean        @default(true)
   lastLoginAt   DateTime?
   createdAt     DateTime       @default(now())
@@ -100,22 +83,24 @@ model User {
 // =============================================
 
 model Category {
-  id            String         @id @default(uuid())  tenantId      String          parentId      String?         name          String         @db.VarChar(100)
-  slug          String         @db.VarChar(100)
-  description   String?         imageUrl      String?         sortOrder     Int            @default(0)
+  id            String         @id @default(uuid())
+  tenantId      String
+  parentId      String?
+  name          String
+  slug          String
+  description   String?
+  imageUrl      String?
+  sortOrder     Int            @default(0)
   isActive      Boolean        @default(true)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
   // Relations
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  parent        Category?      @relation("CategoryParent", fields: [parentId], references: [id], onDelete: SetNull)
-  children      Category[]     @relation("CategoryParent")
   products      Product[]
 
   @@unique([tenantId, slug])
   @@index([tenantId])
-  @@index([tenantId, parentId])
   @@index([tenantId, isActive])
 }
 
@@ -124,21 +109,27 @@ model Category {
 // =============================================
 
 model Product {
-  id                  String         @id @default(uuid())  tenantId            String          categoryId          String?         name                String         @db.VarChar(200)
-  slug                String         @db.VarChar(200)
-  description         String?         sku                 String          price               Decimal
+  id                  String         @id @default(uuid())
+  tenantId            String
+  categoryId          String?
+  name                String
+  slug                String
+  description         String?
+  sku                 String
+  price               Decimal
   comparePrice        Decimal?
   costPrice           Decimal?
   stockQuantity       Int            @default(0)
   lowStockThreshold   Int            @default(10)
-  unit                String         @default("piece") @db.VarChar(30)
-  imageUrls           Json           @default("[]")
-  tags                String[]       @default([])
+  unit                String         @default("pc")
+  imageUrls           String
+  tags                String
   isActive            Boolean        @default(true)
   isFeatured          Boolean        @default(false)
   weightGrams         Int?
-  metaTitle           String?        @db.VarChar(200)
-  metaDescription     String?         createdAt           DateTime       @default(now())
+  metaTitle           String?
+  metaDescription     String?
+  createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
 
   // Relations
@@ -148,20 +139,20 @@ model Product {
   orderItems          OrderItem[]
 
   @@unique([tenantId, sku])
-  @@unique([tenantId, slug])
   @@index([tenantId])
-  @@index([tenantId, categoryId])
   @@index([tenantId, isActive])
-  @@index([tenantId, isFeatured])
-  @@index([tenantId, stockQuantity])
+  @@index([categoryId])
+  @@index([tenantId, categoryId])
 }
 
 // =============================================
-// CARTS (authenticated users only)
+// CART
 // =============================================
 
 model Cart {
-  id            String         @id @default(uuid())  tenantId      String          userId        String         @db.Uuid @unique
+  id            String         @id @default(uuid())
+  tenantId      String
+  userId        String         @unique
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -170,16 +161,16 @@ model Cart {
   user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   items         CartItem[]
 
-  @@unique([tenantId, userId])
-  @@index([tenantId, userId])
+  @@index([userId])
+  @@index([tenantId])
 }
 
-// =============================================
-// CART_ITEMS
-// =============================================
-
 model CartItem {
-  id            String         @id @default(uuid())  cartId        String          tenantId      String          productId     String          quantity      Int            @default(1)
+  id            String         @id @default(uuid())
+  cartId        String
+  tenantId      String
+  productId     String
+  quantity      Int            @default(1)
   unitPrice     Decimal
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -192,6 +183,7 @@ model CartItem {
   @@unique([cartId, productId])
   @@index([cartId])
   @@index([tenantId])
+  @@index([productId])
 }
 
 // =============================================
@@ -199,13 +191,19 @@ model CartItem {
 // =============================================
 
 model Order {
-  id                String         @id @default(uuid())  tenantId          String          userId            String          orderNumber       String          status            OrderStatus    @default(pending)
+  id                String         @id @default(uuid())
+  tenantId          String
+  userId            String
+  orderNumber       String
+  status            OrderStatus    @default(pending)
   subtotal          Decimal
-  discountAmount    Decimal        @default(0)
-  deliveryFee       Decimal        @default(0)
+  tax               Decimal        @default(0)
+  shippingCost      Decimal        @default(0)
   totalAmount       Decimal
   deliveryAddress   Json
-  notes             String?         cancelledReason   String?         confirmedAt       DateTime?
+  notes             String?
+  cancelledReason   String?
+  confirmedAt       DateTime?
   shippedAt         DateTime?
   deliveredAt       DateTime?
   cancelledAt       DateTime?
@@ -214,23 +212,24 @@ model Order {
 
   // Relations
   tenant            Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  user              User           @relation(fields: [userId], references: [id])
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   items             OrderItem[]
 
   @@unique([tenantId, orderNumber])
   @@index([tenantId])
-  @@index([tenantId, userId])
-  @@index([tenantId, status])
-  @@index([tenantId, createdAt])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }
 
-// =============================================
-// ORDER_ITEMS
-// =============================================
-
 model OrderItem {
-  id            String         @id @default(uuid())  orderId       String          tenantId      String          productId     String          productName   String         @db.VarChar(200)
-  productSku    String          quantity      Int
+  id            String         @id @default(uuid())
+  orderId       String
+  tenantId      String
+  productId     String
+  productName   String
+  productSku    String
+  quantity      Int
   unitPrice     Decimal
   totalPrice    Decimal
   createdAt     DateTime       @default(now())
@@ -238,19 +237,22 @@ model OrderItem {
   // Relations
   order         Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
   tenant        Tenant         @relation(fields: [tenantId], references: [id], onDelete: Cascade)
-  product       Product        @relation(fields: [productId], references: [id])
+  product       Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
 
   @@index([orderId])
   @@index([tenantId])
-  @@index([tenantId, productId])
+  @@index([productId])
 }
 
 // =============================================
-// PASSWORD_RESET_TOKENS
+// PASSWORD RESET
 // =============================================
 
 model PasswordResetToken {
-  id            String         @id @default(uuid())  userId        String          tokenHash     String         @unique  expiresAt     DateTime
+  id            String         @id @default(uuid())
+  userId        String
+  tokenHash     String         @unique
+  expiresAt     DateTime
   usedAt        DateTime?
   createdAt     DateTime       @default(now())
 
@@ -261,23 +263,28 @@ model PasswordResetToken {
 }
 
 // =============================================
-// AUDIT_LOGS
+// AUDIT LOGS
 // =============================================
 
 model AuditLog {
-  id            String         @id @default(uuid())  tenantId      String?         actorId       String?         actorEmail    String?         action        AuditAction
-  entityType    String         @db.VarChar(50)
-  entityId      String?         oldValues     Json?
+  id            String         @id @default(uuid())
+  tenantId      String?
+  actorId       String?
+  actorEmail    String?
+  action        AuditAction
+  entityType    String
+  entityId      String?
+  oldValues     Json?
   newValues     Json?
-  ipAddress     String?        @db.Inet
-  userAgent     String?         createdAt     DateTime       @default(now())
+  ipAddress     String?
+  userAgent     String?
+  createdAt     DateTime       @default(now())
 
   // Relations
-  tenant        Tenant?        @relation(fields: [tenantId], references: [id], onDelete: SetNull)
-  actor         User?          @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  tenant        Tenant?        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([actorId])
-  @@index([entityType, entityId])
-  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([entityType])
+  @@index([createdAt])
 }
