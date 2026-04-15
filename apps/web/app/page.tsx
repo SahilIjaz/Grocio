@@ -173,15 +173,29 @@ export default function Home() {
                     style={{
                       width: "100%",
                       height: "200px",
-                      background: "linear-gradient(135deg, var(--primary-light) 0%, #e0f2fe 100%)",
+                      background: tenant.logoUrl ? "none" : "linear-gradient(135deg, var(--primary-light) 0%, #e0f2fe 100%)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: "4rem",
                       marginBottom: "var(--spacing-6)",
+                      overflow: "hidden",
                     }}
                   >
-                    🛍️
+                    {tenant.logoUrl ? (
+                      <img
+                        src={tenant.logoUrl}
+                        alt={tenant.name}
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          display: "block",
+                        }}
+                      />
+                    ) : (
+                      <span>🛍️</span>
+                    )}
                   </div>
                   <h3 style={{ marginBottom: "var(--spacing-2)" }}>{tenant.name}</h3>
                   <p style={{ marginBottom: "var(--spacing-4)", color: "var(--gray-600)" }}>
