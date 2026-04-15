@@ -20,12 +20,40 @@ interface Tenant {
   contactEmail?: string;
 }
 
+interface UsersResponse {
+  data: User[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    pages: number;
+  };
+}
+
+interface Analytics {
+  totalUsers: number;
+  totalTenants: number;
+  totalOrders: number;
+  totalRevenue: number;
+  usersByRole: { role: string; _count: number }[];
+  ordersByStatus: { status: string; _count: number }[];
+  recentOrders: any[];
+}
+
 export default function AdminPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [tenants, setTenants] = useState<Tenant[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [analytics, setAnalytics] = useState<Analytics | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [userPage, setUserPage] = useState(1);
+  const [userLimit, setUserLimit] = useState(10);
+  const [userSearch, setUserSearch] = useState("");
+  const [userRole, setUserRole] = useState("");
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");

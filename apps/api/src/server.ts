@@ -13,6 +13,91 @@ app.use(express.json({ limit: "50mb" }));
 
 app.get("/api/v1/health", (req, res) => res.json({ status: "ok" }));
 
+app.get("/api/v1/users", async (req, res) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    const search = (req.query.search as string) || "";
+    const role = (req.query.role as string) || "";
+
+    const skip = (page - 1) * limit;
+
+    const where: any = {};
+    if (search) {
+      where.OR = [
+        { email: { contains: search, mode: "insensitive" } },
+        { firstName: { contains: search, mode: "insensitive" } },
+        { lastName: { contains: search, mode: "insensitive" } },
+      ];
+    }
+    if (role) {
+      where.role = role;
+    }
+
+    const total = await prisma.user.count({ where });
+    const users = await prisma.user.findMany({
+      where,
+      select: { id: true, email: true, firstName: true, lastName: true, role: true, createdAt: true, tenantId: true },
+      skip,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json({
+      data: users,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    });
+  } catch (error) {
+    console.error("Get users error:", error);
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+});
+
+app.get("/api/v1/analytics", async (req, res) => {
+  try {
+    const totalUsers = await prisma.user.count();
+    const totalTenants = await prisma.tenant.count();
+    const totalOrders = await prisma.order.count();
+    const totalRevenue = await prisma.order.aggregate({
+      _sum: { totalAmount: true },
+    });
+
+    const usersByRole = await prisma.user.groupBy({
+      by: ["role"],
+      _count: true,
+    });
+
+    const ordersByStatus = await prisma.order.groupBy({
+      by: ["status"],
+      _count: true,
+    });
+
+    const recentOrders = await prisma.order.findMany({
+      take: 10,
+      orderBy: { createdAt: "desc" },
+      include: { user: { select: { email: true, firstName: true, lastName: true } }, tenant: { select: { name: true } } },
+    });
+
+    res.json({
+      totalUsers,
+      totalTenants,
+      totalOrders,
+      totalRevenue: totalRevenue._sum.totalAmount || 0,
+      usersByRole,
+      ordersByStatus,
+      recentOrders,
+    });
+  } catch (error) {
+    console.error("Get analytics error:", error);
+    res.status(500).json({ error: "Failed to fetch analytics" });
+  }
+});
+
 app.post("/api/v1/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
