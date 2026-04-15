@@ -345,23 +345,38 @@ app.get("/api/v1/cart/:cartId", async (req, res) => {
 
 app.post("/api/v1/orders", async (req, res) => {
   try {
-    const { userId, items, deliveryAddress } = req.body;
+    const { userId, items, deliveryAddress, tenantSlug } = req.body;
 
-    console.log("Order creation request:", { userId, itemsCount: items?.length, deliveryAddress });
+    console.log("Order creation request:", { userId, itemsCount: items?.length, deliveryAddress, tenantSlug });
 
     if (!userId || !items || items.length === 0) {
       console.log("Missing required fields - userId:", userId, "items:", items);
       return res.status(400).json({ error: "Missing required fields: userId, items, deliveryAddress" });
     }
 
-    // Get user to find their tenant
+    // Get user
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       console.log("User not found:", userId);
       return res.status(404).json({ error: "User not found" });
     }
 
-    console.log("User found:", user.id, "tenantId:", user.tenantId);
+    console.log("User found:", user.id, "role:", user.role);
+
+    // Determine tenantId
+    let tenantId = user.tenantId;
+
+    // If user is a customer and no tenantId, try to get it from tenantSlug
+    if (!tenantId && tenantSlug) {
+      const tenant = await prisma.tenant.findUnique({ where: { slug: tenantSlug } });
+      if (tenant) {
+        tenantId = tenant.id;
+      }
+    }
+
+    if (!tenantId) {
+      return res.status(400).json({ error: "Unable to determine store for order. Please provide tenantSlug." });
+    }
 
     // Calculate totals from items
     let subtotal = 0;
@@ -377,11 +392,11 @@ app.post("/api/v1/orders", async (req, res) => {
       };
     });
 
-    console.log("Order items prepared:", orderItems.length, "subtotal:", subtotal);
+    console.log("Order items prepared:", orderItems.length, "subtotal:", subtotal, "tenantId:", tenantId);
 
     const order = await prisma.order.create({
       data: {
-        tenantId: user.tenantId || "",
+        tenantId,
         userId,
         orderNumber: `ORD-${Date.now()}`,
         subtotal: subtotal.toString(),

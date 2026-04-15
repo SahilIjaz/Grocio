@@ -120,6 +120,7 @@ export default function CartPage() {
           userId: user.id,
           deliveryAddress: formData.deliveryAddress,
           items: cartItems,
+          tenantSlug: slug,
         }),
       });
 
