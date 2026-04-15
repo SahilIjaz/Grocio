@@ -246,7 +246,7 @@ export default function StorePage() {
                   onClick={() => setSelectedCategory(null)}
                   className={`filter-item ${selectedCategory === null ? "active" : ""}`}
                 >
-                  <span>🏷️</span> All Products
+                  All Products
                 </button>
                 {categories.map((cat) => (
                   <button
@@ -254,7 +254,7 @@ export default function StorePage() {
                     onClick={() => setSelectedCategory(cat.name)}
                     className={`filter-item ${selectedCategory === cat.name ? "active" : ""}`}
                   >
-                    <span>{cat.name === "Produce" ? "🥕" : cat.name === "Dairy" ? "🥛" : "🥩"}</span> {cat.name}
+                    {cat.name}
                   </button>
                 ))}
               </aside>
@@ -308,23 +308,14 @@ export default function StorePage() {
                                   display: "block",
                                 }}
                                 onError={(e) => {
-                                  // Fallback to emoji if image fails to load
+                                  // Fallback to generic placeholder if image fails to load
                                   e.currentTarget.style.display = "none";
-                                  e.currentTarget.parentElement!.textContent =
-                                    product.category?.name === "Produce"
-                                      ? "🥕"
-                                      : product.category?.name === "Dairy"
-                                        ? "🥛"
-                                        : "🥩";
+                                  e.currentTarget.parentElement!.innerHTML = '<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: #f0f0f0; color: #999; font-size: 0.9rem;">No Image</div>';
                                 }}
                               />
                             ) : (
-                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "3rem" }}>
-                                {product.category?.name === "Produce"
-                                  ? "🥕"
-                                  : product.category?.name === "Dairy"
-                                    ? "🥛"
-                                    : "🥩"}
+                              <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", backgroundColor: "var(--gray-100)", color: "var(--gray-400)", fontSize: "0.9rem" }}>
+                                No Image
                               </div>
                             )}
                           </div>
