@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // =============================================
@@ -51,15 +51,8 @@ enum AuditAction {
 // =============================================
 
 model Tenant {
-  id            String         @id @default(uuid()) @db.Uuid
-  name          String         @db.VarChar(120)
-  slug          String         @unique @db.VarChar(60)
-  status        TenantStatus   @default(pending)
-  logoUrl       String?        @db.Text
-  contactEmail  String         @db.VarChar(254)
-  contactPhone  String?        @db.VarChar(20)
-  address       String?        @db.Text
-  settings      Json           @default("{}")
+  id            String         @id @default(uuid())  name          String          slug          String         @unique  status        TenantStatus   @default(pending)
+  logoUrl       String?         contactEmail  String          contactPhone  String?         address       String?         settings      Json           @default("{}")
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -82,13 +75,7 @@ model Tenant {
 // =============================================
 
 model User {
-  id            String         @id @default(uuid()) @db.Uuid
-  tenantId      String?        @db.Uuid
-  email         String         @db.VarChar(254)
-  passwordHash  String         @db.Text
-  firstName     String         @db.VarChar(80)
-  lastName      String         @db.VarChar(80)
-  role          UserRole       @default(customer)
+  id            String         @id @default(uuid())  tenantId      String?         email         String          passwordHash  String          firstName     String          lastName      String          role          UserRole       @default(customer)
   isActive      Boolean        @default(true)
   lastLoginAt   DateTime?
   createdAt     DateTime       @default(now())
@@ -113,14 +100,9 @@ model User {
 // =============================================
 
 model Category {
-  id            String         @id @default(uuid()) @db.Uuid
-  tenantId      String         @db.Uuid
-  parentId      String?        @db.Uuid
-  name          String         @db.VarChar(100)
+  id            String         @id @default(uuid())  tenantId      String          parentId      String?         name          String         @db.VarChar(100)
   slug          String         @db.VarChar(100)
-  description   String?        @db.Text
-  imageUrl      String?        @db.Text
-  sortOrder     Int            @default(0)
+  description   String?         imageUrl      String?         sortOrder     Int            @default(0)
   isActive      Boolean        @default(true)
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -142,14 +124,9 @@ model Category {
 // =============================================
 
 model Product {
-  id                  String         @id @default(uuid()) @db.Uuid
-  tenantId            String         @db.Uuid
-  categoryId          String?        @db.Uuid
-  name                String         @db.VarChar(200)
+  id                  String         @id @default(uuid())  tenantId            String          categoryId          String?         name                String         @db.VarChar(200)
   slug                String         @db.VarChar(200)
-  description         String?        @db.Text
-  sku                 String         @db.VarChar(80)
-  price               Decimal
+  description         String?         sku                 String          price               Decimal
   comparePrice        Decimal?
   costPrice           Decimal?
   stockQuantity       Int            @default(0)
@@ -161,8 +138,7 @@ model Product {
   isFeatured          Boolean        @default(false)
   weightGrams         Int?
   metaTitle           String?        @db.VarChar(200)
-  metaDescription     String?        @db.Text
-  createdAt           DateTime       @default(now())
+  metaDescription     String?         createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
 
   // Relations
@@ -185,9 +161,7 @@ model Product {
 // =============================================
 
 model Cart {
-  id            String         @id @default(uuid()) @db.Uuid
-  tenantId      String         @db.Uuid
-  userId        String         @db.Uuid @unique
+  id            String         @id @default(uuid())  tenantId      String          userId        String         @db.Uuid @unique
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -205,11 +179,7 @@ model Cart {
 // =============================================
 
 model CartItem {
-  id            String         @id @default(uuid()) @db.Uuid
-  cartId        String         @db.Uuid
-  tenantId      String         @db.Uuid
-  productId     String         @db.Uuid
-  quantity      Int            @default(1)
+  id            String         @id @default(uuid())  cartId        String          tenantId      String          productId     String          quantity      Int            @default(1)
   unitPrice     Decimal
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -229,19 +199,13 @@ model CartItem {
 // =============================================
 
 model Order {
-  id                String         @id @default(uuid()) @db.Uuid
-  tenantId          String         @db.Uuid
-  userId            String         @db.Uuid
-  orderNumber       String         @db.VarChar(20)
-  status            OrderStatus    @default(pending)
+  id                String         @id @default(uuid())  tenantId          String          userId            String          orderNumber       String          status            OrderStatus    @default(pending)
   subtotal          Decimal
   discountAmount    Decimal        @default(0)
   deliveryFee       Decimal        @default(0)
   totalAmount       Decimal
   deliveryAddress   Json
-  notes             String?        @db.Text
-  cancelledReason   String?        @db.Text
-  confirmedAt       DateTime?
+  notes             String?         cancelledReason   String?         confirmedAt       DateTime?
   shippedAt         DateTime?
   deliveredAt       DateTime?
   cancelledAt       DateTime?
@@ -265,13 +229,8 @@ model Order {
 // =============================================
 
 model OrderItem {
-  id            String         @id @default(uuid()) @db.Uuid
-  orderId       String         @db.Uuid
-  tenantId      String         @db.Uuid
-  productId     String         @db.Uuid
-  productName   String         @db.VarChar(200)
-  productSku    String         @db.VarChar(80)
-  quantity      Int
+  id            String         @id @default(uuid())  orderId       String          tenantId      String          productId     String          productName   String         @db.VarChar(200)
+  productSku    String          quantity      Int
   unitPrice     Decimal
   totalPrice    Decimal
   createdAt     DateTime       @default(now())
@@ -291,10 +250,7 @@ model OrderItem {
 // =============================================
 
 model PasswordResetToken {
-  id            String         @id @default(uuid()) @db.Uuid
-  userId        String         @db.Uuid
-  tokenHash     String         @unique @db.Text
-  expiresAt     DateTime
+  id            String         @id @default(uuid())  userId        String          tokenHash     String         @unique  expiresAt     DateTime
   usedAt        DateTime?
   createdAt     DateTime       @default(now())
 
@@ -309,18 +265,12 @@ model PasswordResetToken {
 // =============================================
 
 model AuditLog {
-  id            String         @id @default(uuid()) @db.Uuid
-  tenantId      String?        @db.Uuid
-  actorId       String?        @db.Uuid
-  actorEmail    String?        @db.VarChar(254)
-  action        AuditAction
+  id            String         @id @default(uuid())  tenantId      String?         actorId       String?         actorEmail    String?         action        AuditAction
   entityType    String         @db.VarChar(50)
-  entityId      String?        @db.Uuid
-  oldValues     Json?
+  entityId      String?         oldValues     Json?
   newValues     Json?
   ipAddress     String?        @db.Inet
-  userAgent     String?        @db.Text
-  createdAt     DateTime       @default(now())
+  userAgent     String?         createdAt     DateTime       @default(now())
 
   // Relations
   tenant        Tenant?        @relation(fields: [tenantId], references: [id], onDelete: SetNull)
