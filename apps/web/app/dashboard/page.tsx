@@ -19,6 +19,7 @@ interface Product {
   price: string;
   stockQuantity: number;
   description: string;
+  categoryId?: string;
 }
 
 interface Category {
@@ -42,6 +43,7 @@ interface Order {
   orderNumber: string;
   totalAmount: string;
   createdAt: string;
+  status: string;
   user: {
     firstName: string;
     lastName: string;
@@ -73,6 +75,9 @@ export default function DashboardPage() {
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [storeInfoForm, setStoreInfoForm] = useState({ name: "", contactEmail: "", address: "", contactPhone: "" });
   const [isEditingStoreInfo, setIsEditingStoreInfo] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [orderStatusUpdate, setOrderStatusUpdate] = useState("");
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -364,6 +369,122 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error:", error);
       alert(`❌ ${error instanceof Error ? error.message : "Failed to update store information"}`);
+    }
+  };
+
+  const startEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setProductForm({
+      name: product.name,
+      price: product.price,
+      stock: product.stockQuantity.toString(),
+      description: product.description,
+      categoryId: product.categoryId || "",
+    });
+    setShowAddProduct(true);
+  };
+
+  const handleDeleteProduct = async (productId: string) => {
+    if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/v1/products/${productId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete product");
+
+      setProducts(products.filter((p) => p.id !== productId));
+      alert("✅ Product deleted successfully!");
+    } catch (error) {
+      alert(`❌ ${error instanceof Error ? error.message : "Failed to delete product"}`);
+    }
+  };
+
+  const handleSaveProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!productForm.name || !productForm.price || !productForm.categoryId) {
+      alert("❌ Name, price, and category are required");
+      return;
+    }
+
+    try {
+      const method = editingProduct ? "PUT" : "POST";
+      const url = editingProduct
+        ? `http://localhost:3001/api/v1/products/${editingProduct.id}`
+        : `http://localhost:3001/api/v1/tenants/${tenantSlug}/products`;
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: productForm.name,
+          description: productForm.description,
+          price: parseFloat(productForm.price),
+          stockQuantity: parseInt(productForm.stock),
+          categoryId: productForm.categoryId,
+        }),
+      });
+
+      if (!response.ok) throw new Error("Failed to save product");
+
+      const savedProduct = await response.json();
+
+      if (editingProduct) {
+        setProducts(products.map((p) => (p.id === savedProduct.id ? savedProduct : p)));
+      } else {
+        setProducts([...products, savedProduct]);
+      }
+
+      setShowAddProduct(false);
+      setEditingProduct(null);
+      setProductForm({ name: "", price: "", stock: "", description: "", categoryId: "" });
+      alert(editingProduct ? "✅ Product updated successfully!" : "✅ Product added successfully!");
+    } catch (error) {
+      alert(`❌ ${error instanceof Error ? error.message : "Failed to save product"}`);
+    }
+  };
+
+  const startEditOrder = (order: Order) => {
+    setEditingOrder(order);
+    setOrderStatusUpdate(order.status);
+  };
+
+  const handleUpdateOrderStatus = async () => {
+    if (!editingOrder) return;
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/v1/orders/${editingOrder.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: orderStatusUpdate }),
+      });
+
+      if (!response.ok) throw new Error("Failed to update order status");
+
+      const updatedOrder = await response.json();
+      setOrders(orders.map((o) => (o.id === updatedOrder.id ? updatedOrder : o)));
+      setEditingOrder(null);
+      alert("✅ Order status updated successfully!");
+    } catch (error) {
+      alert(`❌ ${error instanceof Error ? error.message : "Failed to update order status"}`);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string) => {
+    if (!confirm("Are you sure you want to delete this order? This action cannot be undone.")) return;
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/v1/orders/${orderId}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete order");
+
+      setOrders(orders.filter((o) => o.id !== orderId));
+      alert("✅ Order deleted successfully!");
+    } catch (error) {
+      alert(`❌ ${error instanceof Error ? error.message : "Failed to delete order"}`);
     }
   };
 

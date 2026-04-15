@@ -87,7 +87,7 @@ app.get("/api/v1/analytics", async (req, res) => {
       totalUsers,
       totalTenants,
       totalOrders,
-      totalRevenue: totalRevenue._sum.totalAmount || 0,
+      totalRevenue: Number(totalRevenue._sum.totalAmount || 0),
       usersByRole,
       ordersByStatus,
       recentOrders,
@@ -401,6 +401,43 @@ app.post("/api/v1/tenants/:tenantSlug/products", async (req, res) => {
   }
 });
 
+app.put("/api/v1/products/:productId", async (req, res) => {
+  try {
+    const { name, description, price, stockQuantity, categoryId, imageUrls } = req.body;
+
+    const product = await prisma.product.update({
+      where: { id: req.params.productId },
+      data: {
+        ...(name && { name }),
+        ...(description !== undefined && { description }),
+        ...(price && { price: price.toString() }),
+        ...(stockQuantity !== undefined && { stockQuantity: parseInt(stockQuantity) }),
+        ...(categoryId && { categoryId }),
+        ...(imageUrls && { imageUrls: JSON.stringify(Array.isArray(imageUrls) ? imageUrls : []) }),
+      },
+      include: { category: true },
+    });
+
+    res.json(product);
+  } catch (error) {
+    console.error("Product update error:", error);
+    res.status(500).json({ error: "Failed to update product" });
+  }
+});
+
+app.delete("/api/v1/products/:productId", async (req, res) => {
+  try {
+    const product = await prisma.product.delete({
+      where: { id: req.params.productId },
+    });
+
+    res.json({ message: "Product deleted successfully", product });
+  } catch (error) {
+    console.error("Product deletion error:", error);
+    res.status(500).json({ error: "Failed to delete product" });
+  }
+});
+
 app.post("/api/v1/cart/add", async (req, res) => {
   try {
     const { userId, tenantId, productId, quantity } = req.body;
@@ -507,6 +544,40 @@ app.post("/api/v1/orders", async (req, res) => {
     console.error("Order creation error:", error);
     const errorMessage = error instanceof Error ? error.message : String(error);
     res.status(500).json({ error: `Failed to create order: ${errorMessage}` });
+  }
+});
+
+app.put("/api/v1/orders/:orderId", async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({ error: "Status is required" });
+    }
+
+    const order = await prisma.order.update({
+      where: { id: req.params.orderId },
+      data: { status },
+      include: { items: true, user: true, tenant: true },
+    });
+
+    res.json(order);
+  } catch (error) {
+    console.error("Order update error:", error);
+    res.status(500).json({ error: "Failed to update order" });
+  }
+});
+
+app.delete("/api/v1/orders/:orderId", async (req, res) => {
+  try {
+    const order = await prisma.order.delete({
+      where: { id: req.params.orderId },
+    });
+
+    res.json({ message: "Order deleted successfully", order });
+  } catch (error) {
+    console.error("Order deletion error:", error);
+    res.status(500).json({ error: "Failed to delete order" });
   }
 });
 
