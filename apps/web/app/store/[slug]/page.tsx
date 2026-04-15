@@ -324,8 +324,15 @@ export default function StorePage() {
                       const productImage = imageUrls && imageUrls.length > 0 && imageUrls[0] ? imageUrls[0] : null;
 
                       return (
-                        <div key={product.id} className="product-card animate-slideIn">
-                          <div className="product-image" style={{ overflow: "hidden", backgroundColor: "var(--gray-100)" }}>
+                        <Link key={product.id} href={`/store/${slug}/product/${product.id}`} style={{ textDecoration: "none" }}>
+                          <div className="product-card animate-slideIn" style={{ cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s" }} onMouseEnter={(e) => {
+                            e.currentTarget.style.transform = "translateY(-4px)";
+                            e.currentTarget.style.boxShadow = "var(--shadow-lg)";
+                          }} onMouseLeave={(e) => {
+                            e.currentTarget.style.transform = "translateY(0)";
+                            e.currentTarget.style.boxShadow = "var(--shadow-md)";
+                          }}>
+                            <div className="product-image" style={{ overflow: "hidden", backgroundColor: "var(--gray-100)" }}>
                             {productImage ? (
                               <img
                                 src={productImage}
