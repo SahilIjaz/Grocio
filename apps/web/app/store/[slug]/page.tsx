@@ -377,9 +377,10 @@ export default function StorePage() {
                                   </button>
                                 )}
                               </div>
+                              </div>
                             </div>
                           </div>
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>
