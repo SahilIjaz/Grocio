@@ -154,19 +154,49 @@ app.get("/api/v1/cart/:cartId", async (req, res) => {
 
 app.post("/api/v1/orders", async (req, res) => {
   try {
-    const { userId, tenantId, cartId, deliveryAddress } = req.body;
-    const cart = await prisma.cart.findUnique({ where: { id: cartId }, include: { items: { include: { product: true } } } });
-    if (!cart || cart.items.length === 0) return res.status(400).json({ error: "Empty cart" });
+    const { userId, items, deliveryAddress } = req.body;
+
+    if (!userId || !items || items.length === 0) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Get user to find their tenant
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Calculate totals from items
     let subtotal = 0;
-    const items = cart.items.map((i) => { const t = i.quantity * Number(i.unitPrice); subtotal += t; return { productId: i.productId, productName: i.product.name, productSku: i.product.sku, quantity: i.quantity, unitPrice: i.unitPrice, totalPrice: t }; });
-    const order = await prisma.order.create({
-      data: { tenantId, userId, orderNumber: `ORD-${Date.now()}`, subtotal, totalAmount: subtotal, deliveryAddress, items: { createMany: { data: items.map((i) => ({ tenantId, ...i })) } } },
-      include: { items: true }
+    const orderItems = items.map((item: any) => {
+      const itemTotal = item.price * item.quantity;
+      subtotal += itemTotal;
+      return {
+        productId: item.id,
+        productName: item.name,
+        quantity: item.quantity,
+        unitPrice: item.price.toString(),
+        totalPrice: itemTotal.toString(),
+      };
     });
-    await prisma.cartItem.deleteMany({ where: { cartId } });
+
+    const order = await prisma.order.create({
+      data: {
+        tenantId: user.tenantId || "",
+        userId,
+        orderNumber: `ORD-${Date.now()}`,
+        subtotal: subtotal.toString(),
+        totalAmount: subtotal.toString(),
+        deliveryAddress,
+        items: { createMany: { data: orderItems } },
+      },
+      include: { items: true },
+    });
+
     res.status(201).json(order);
   } catch (error) {
-    res.status(500).json({ error: "Failed" });
+    console.error("Order creation error:", error);
+    res.status(500).json({ error: "Failed to create order" });
   }
 });
 

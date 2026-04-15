@@ -118,15 +118,14 @@ export default function CartPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           userId: user.id,
-          tenantId: "demo-tenant-id",
-          cartId: "temp-cart-id",
           deliveryAddress: formData.deliveryAddress,
           items: cartItems,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Failed to create order");
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create order");
       }
 
       setSuccess(true);
