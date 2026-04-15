@@ -148,7 +148,7 @@ export default function DashboardPage() {
 
         if (ordersData.orders) {
           setOrders(Array.isArray(ordersData.orders) ? ordersData.orders : []);
-          setTotalRevenue(ordersData.totalRevenue || 0);
+          setOrderStats(ordersData);
         }
       }
     } catch (error) {
