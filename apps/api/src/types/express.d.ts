@@ -29,12 +29,12 @@ declare global {
       /**
        * Validated query parameters (from validateQuery middleware)
        */
-      validatedQuery?: Record<string, any>;
+      validatedQuery?: Record<string, unknown>;
 
       /**
        * Validated route parameters (from validateParams middleware)
        */
-      validatedParams?: Record<string, any>;
+      validatedParams?: Record<string, unknown>;
     }
   }
 }
