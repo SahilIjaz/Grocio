@@ -1,4 +1,5 @@
 import "./globals.css";
+import "./styles.css";
 
 export const metadata = {
   title: "Grocio - Online Grocery Shopping",
