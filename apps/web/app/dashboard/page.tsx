@@ -586,11 +586,12 @@ export default function DashboardPage() {
               <h1 style={{ marginBottom: "var(--spacing-2)" }}>Store Overview</h1>
               <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-8)" }}>Welcome to your store dashboard</p>
 
+              {/* Main Metrics */}
               <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "var(--spacing-6)", marginBottom: "var(--spacing-8)" }}>
                 {[
                   { label: "Total Products", value: totalProducts.toString(), icon: "📦", color: "var(--primary)" },
                   { label: "Total Categories", value: activeCategories.toString(), icon: "🏷️", color: "var(--secondary)" },
-                  { label: "Total Revenue", value: `$${totalRevenue.toFixed(2)}`, icon: "💰", color: "var(--accent)" },
+                  { label: "Revenue (Delivered)", value: `$${(orderStats?.revenue || 0).toFixed(2)}`, icon: "💰", color: "#10b981" },
                 ].map((stat, idx) => (
                   <div key={idx} className="card" style={{ borderLeft: `4px solid ${stat.color}` }}>
                     <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>{stat.icon}</div>
@@ -598,6 +599,33 @@ export default function DashboardPage() {
                     <h3 style={{ fontSize: "2rem", color: stat.color, margin: 0 }}>{stat.value}</h3>
                   </div>
                 ))}
+              </div>
+
+              {/* Order Status Breakdown */}
+              <div className="card" style={{ marginBottom: "var(--spacing-8)" }}>
+                <h3 style={{ marginBottom: "var(--spacing-6)" }}>Order Status Overview</h3>
+                <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "var(--spacing-4)" }}>
+                  <div style={{ padding: "var(--spacing-4)", background: "#dcfce7", borderRadius: "var(--radius-base)" }}>
+                    <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-2)", fontSize: "0.9rem" }}>Delivered Orders</p>
+                    <h4 style={{ fontSize: "1.5rem", color: "#166534", margin: 0 }}>{orderStats?.deliveredOrders || 0}</h4>
+                    <p style={{ fontSize: "0.85rem", color: "#166534", marginTop: "var(--spacing-1)" }}>${(orderStats?.revenue || 0).toFixed(2)}</p>
+                  </div>
+                  <div style={{ padding: "var(--spacing-4)", background: "#fef3c7", borderRadius: "var(--radius-base)" }}>
+                    <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-2)", fontSize: "0.9rem" }}>Pending Orders</p>
+                    <h4 style={{ fontSize: "1.5rem", color: "#b45309", margin: 0 }}>{orderStats?.pendingOrders || 0}</h4>
+                    <p style={{ fontSize: "0.85rem", color: "#b45309", marginTop: "var(--spacing-1)" }}>${(orderStats?.pendingOrdersValue || 0).toFixed(2)}</p>
+                  </div>
+                  <div style={{ padding: "var(--spacing-4)", background: "#dbeafe", borderRadius: "var(--radius-base)" }}>
+                    <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-2)", fontSize: "0.9rem" }}>In Processing</p>
+                    <h4 style={{ fontSize: "1.5rem", color: "#1e40af", margin: 0 }}>{orderStats?.processingOrders || 0}</h4>
+                    <p style={{ fontSize: "0.85rem", color: "#1e40af", marginTop: "var(--spacing-1)" }}>${(orderStats?.processingOrdersValue || 0).toFixed(2)}</p>
+                  </div>
+                  <div style={{ padding: "var(--spacing-4)", background: "#fee2e2", borderRadius: "var(--radius-base)" }}>
+                    <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-2)", fontSize: "0.9rem" }}>Cancelled Orders</p>
+                    <h4 style={{ fontSize: "1.5rem", color: "#991b1b", margin: 0 }}>{orderStats?.cancelledOrders || 0}</h4>
+                    <p style={{ fontSize: "0.85rem", color: "#991b1b", marginTop: "var(--spacing-1)" }}>Not counted</p>
+                  </div>
+                </div>
               </div>
 
               <div className="card">
