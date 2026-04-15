@@ -54,13 +54,13 @@ async function main(): Promise<void> {
         contactPhone: "+1-234-567-8900",
         address: "123 Main St, San Francisco, CA 94102",
         status: "active",
-        settings: {
+        settings: JSON.stringify({
           currency: "USD",
           timezone: "America/Los_Angeles",
           taxRate: 0.08,
           deliveryFee: 5.0,
           orderPrefix: "DMG",
-        },
+        }),
       },
     });
 

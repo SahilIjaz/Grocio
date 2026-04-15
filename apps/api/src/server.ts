@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import bcrypt from "bcrypt";
 import { PrismaClient } from "@prisma/client";
 
 const app = express();
@@ -16,10 +17,17 @@ app.post("/api/v1/auth/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     const user = await prisma.user.findFirst({ where: { email } });
-    if (!user || user.passwordHash !== Buffer.from(password).toString("base64")) {
+    if (!user) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-    res.json({ id: user.id, email: user.email, role: user.role });
+
+    // Verify password using bcrypt
+    const passwordValid = await bcrypt.compare(password, user.passwordHash);
+    if (!passwordValid) {
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    res.json({ id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName, tenantId: user.tenantId });
   } catch (error) {
     res.status(500).json({ error: "Login failed" });
   }
@@ -50,12 +58,15 @@ app.post("/api/v1/auth/register", async (req, res) => {
       tenantId = tenant.id;
     }
 
+    // Hash password using bcrypt
+    const passwordHash = await bcrypt.hash(password, 12);
+
     const user = await prisma.user.create({
       data: {
         email,
         firstName,
         lastName,
-        passwordHash: Buffer.from(password).toString("base64"),
+        passwordHash,
         role: role,
         tenantId: tenantId
       }
