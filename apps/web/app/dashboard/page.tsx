@@ -51,6 +51,18 @@ interface Order {
   };
 }
 
+interface OrderStats {
+  totalOrders: number;
+  deliveredOrders: number;
+  pendingOrders: number;
+  processingOrders: number;
+  cancelledOrders: number;
+  revenue: number;
+  pendingOrdersValue: number;
+  processingOrdersValue: number;
+  orders: Order[];
+}
+
 export default function DashboardPage() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
@@ -60,7 +72,7 @@ export default function DashboardPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [store, setStore] = useState<Store | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [orderStats, setOrderStats] = useState<OrderStats | null>(null);
   const [tenantSlug, setTenantSlug] = useState("");
   const [storeLogoPreview, setStoreLogoPreview] = useState<string>("");
   const [storeLogoFile, setStoreLogoFile] = useState<File | null>(null);

@@ -219,9 +219,22 @@ app.get("/api/v1/tenants/:slug/orders", async (req, res) => {
       orderBy: { createdAt: "desc" },
     });
 
+    // Calculate revenue based on order status
+    const deliveredOrders = orders.filter((o) => o.status === "delivered");
+    const pendingOrders = orders.filter((o) => o.status === "pending");
+    const processingOrders = orders.filter((o) => o.status === "confirmed" || o.status === "shipped");
+    const cancelledOrders = orders.filter((o) => o.status === "cancelled");
+
     const stats = {
       totalOrders: orders.length,
-      totalRevenue: orders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0),
+      deliveredOrders: deliveredOrders.length,
+      pendingOrders: pendingOrders.length,
+      processingOrders: processingOrders.length,
+      cancelledOrders: cancelledOrders.length,
+      // Only count delivered orders as revenue (industry standard)
+      revenue: deliveredOrders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0),
+      pendingOrdersValue: pendingOrders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0),
+      processingOrdersValue: processingOrders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0),
       orders,
     };
 
