@@ -284,9 +284,15 @@ export default function StorePage() {
                     {filteredProducts.map((product) => {
                       let imageUrls: string[] = [];
                       if (product.imageUrls) {
-                        imageUrls = typeof product.imageUrls === "string" ? JSON.parse(product.imageUrls) : product.imageUrls;
+                        try {
+                          imageUrls = typeof product.imageUrls === "string"
+                            ? (product.imageUrls.startsWith('[') ? JSON.parse(product.imageUrls) : [product.imageUrls])
+                            : Array.isArray(product.imageUrls) ? product.imageUrls : [];
+                        } catch (e) {
+                          imageUrls = [];
+                        }
                       }
-                      const productImage = imageUrls && imageUrls.length > 0 ? imageUrls[0] : null;
+                      const productImage = imageUrls && imageUrls.length > 0 && imageUrls[0] ? imageUrls[0] : null;
 
                       return (
                         <div key={product.id} className="product-card animate-slideIn">
