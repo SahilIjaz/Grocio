@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 
 app.use(helmet());
 app.use(cors({ origin: "*" }));
-app.use(express.json());
+app.use(express.json({ limit: "50mb" }));
 
 app.get("/api/v1/health", (req, res) => res.json({ status: "ok" }));
 

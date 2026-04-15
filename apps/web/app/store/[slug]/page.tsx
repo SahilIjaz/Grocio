@@ -38,9 +38,15 @@ export default function StorePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        console.log("Store slug:", slug);
+        const productsUrl = `http://localhost:3001/api/v1/tenants/${slug}/products`;
+        const categoriesUrl = `http://localhost:3001/api/v1/tenants/${slug}/categories`;
+
+        console.log("Fetching from:", productsUrl, categoriesUrl);
+
         const [productsRes, categoriesRes] = await Promise.all([
-          fetch(`http://localhost:3001/api/v1/tenants/${slug}/products`),
-          fetch(`http://localhost:3001/api/v1/tenants/${slug}/categories`),
+          fetch(productsUrl),
+          fetch(categoriesUrl),
         ]);
 
         if (!productsRes.ok) {
@@ -53,8 +59,19 @@ export default function StorePage() {
         const productsData = await productsRes.json();
         const categoriesData = await categoriesRes.json();
 
-        setProducts(Array.isArray(productsData) ? productsData : []);
-        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+        console.log("Fetched products count:", Array.isArray(productsData) ? productsData.length : 0);
+        console.log("Fetched categories count:", Array.isArray(categoriesData) ? categoriesData.length : 0);
+        console.log("Fetched products:", productsData);
+        console.log("Fetched categories:", categoriesData);
+
+        const productsArray = Array.isArray(productsData) ? productsData : [];
+        const categoriesArray = Array.isArray(categoriesData) ? categoriesData : [];
+
+        console.log("Setting products:", productsArray);
+        console.log("Setting categories:", categoriesArray);
+
+        setProducts(productsArray);
+        setCategories(categoriesArray);
         setLoading(false);
       } catch (err) {
         console.error("Fetch error:", err);
@@ -71,6 +88,13 @@ export default function StorePage() {
   const filteredProducts = products
     .filter((p) => !selectedCategory || p.category?.name === selectedCategory)
     .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  useEffect(() => {
+    console.log("Products:", products);
+    console.log("Categories:", categories);
+    console.log("Filtered Products:", filteredProducts);
+    console.log("Selected Category:", selectedCategory);
+  }, [products, categories, filteredProducts, selectedCategory]);
 
   const addToCart = (productId: string) => {
     const product = products.find((p) => p.id === productId);

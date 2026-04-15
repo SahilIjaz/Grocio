@@ -305,7 +305,8 @@ export default function DashboardPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update store");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to update store (${response.status})`);
       }
 
       const updatedStore = await response.json();
@@ -313,7 +314,7 @@ export default function DashboardPage() {
       alert("✅ Store logo updated successfully!");
     } catch (error) {
       console.error("Error:", error);
-      alert("❌ Failed to update store logo");
+      alert(`❌ ${error instanceof Error ? error.message : "Failed to update store logo"}`);
     }
   };
 
