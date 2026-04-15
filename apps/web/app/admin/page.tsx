@@ -70,14 +70,36 @@ export default function AdminPage() {
 
     setUser(userData);
 
-    // Fetch tenants
-    fetch("http://localhost:3001/api/v1/tenants")
-      .then((res) => res.json())
-      .then((data) => {
-        setTenants(Array.isArray(data) ? data : []);
+    // Fetch all data
+    Promise.all([
+      fetch("http://localhost:3001/api/v1/tenants").then((res) => res.json()),
+      fetch("http://localhost:3001/api/v1/analytics").then((res) => res.json()),
+    ])
+      .then(([tenantsData, analyticsData]) => {
+        setTenants(Array.isArray(tenantsData) ? tenantsData : []);
+        setAnalytics(analyticsData);
       })
       .finally(() => setLoading(false));
   }, [router]);
+
+  // Fetch users when page, search, or role changes
+  useEffect(() => {
+    const params = new URLSearchParams({
+      page: userPage.toString(),
+      limit: userLimit.toString(),
+      ...(userSearch && { search: userSearch }),
+      ...(userRole && { role: userRole }),
+    });
+
+    fetch(`http://localhost:3001/api/v1/users?${params}`)
+      .then((res) => res.json())
+      .then((data: UsersResponse) => {
+        setUsers(data.data);
+        setTotalUsers(data.pagination.total);
+        setTotalPages(data.pagination.pages);
+      })
+      .catch((err) => console.error("Error fetching users:", err));
+  }, [userPage, userSearch, userRole, userLimit]);
 
   const handleLogout = () => {
     localStorage.removeItem("user");
@@ -201,8 +223,9 @@ export default function AdminPage() {
                 {[
                   { label: "Total Tenants", value: tenants.length, icon: "🏢", color: "var(--secondary)" },
                   { label: "Active Stores", value: tenants.filter((t) => t.status === "active").length, icon: "🛍️", color: "var(--primary)" },
-                  { label: "Total Users", value: "15", icon: "👥", color: "var(--accent)" },
-                  { label: "Total Orders", value: "0", icon: "🛒", color: "#8b5cf6" },
+                  { label: "Total Users", value: analytics?.totalUsers || 0, icon: "👥", color: "var(--accent)" },
+                  { label: "Total Orders", value: analytics?.totalOrders || 0, icon: "🛒", color: "#8b5cf6" },
+                  { label: "Total Revenue", value: `$${(analytics?.totalRevenue || 0).toFixed(2)}`, icon: "💰", color: "#10b981" },
                 ].map((stat, idx) => (
                   <div key={idx} className="card" style={{ borderLeft: `4px solid ${stat.color}` }}>
                     <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>{stat.icon}</div>
