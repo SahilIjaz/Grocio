@@ -14,8 +14,8 @@ export async function auditLog(
     action: string;
     entityType: string;
     entityId?: string | null;
-    oldValues?: any;
-    newValues?: any;
+    oldValues?: unknown;
+    newValues?: unknown;
     ipAddress?: string | null;
     userAgent?: string | null;
   }
@@ -29,8 +29,8 @@ export async function auditLog(
         action: data.action as string,
         entityType: data.entityType,
         entityId: data.entityId || null,
-        oldValues: data.oldValues || null,
-        newValues: data.newValues || null,
+        oldValues: data.oldValues ? JSON.stringify(data.oldValues) : null,
+        newValues: data.newValues ? JSON.stringify(data.newValues) : null,
         ipAddress: data.ipAddress || null,
         userAgent: data.userAgent || null,
       },

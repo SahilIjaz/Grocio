@@ -170,12 +170,21 @@ app.post("/api/v1/orders", async (req, res) => {
   }
 });
 
-const start = async () => {
+const start = async (): Promise<void> => {
   try {
     await prisma.$connect();
-    console.log("✅ DB connected");
-    app.listen(3001, () => console.log("\n🚀 API: http://localhost:3001\n"));
+    if (process.env.NODE_ENV !== "production") {
+      // eslint-disable-next-line no-console
+      console.log("✅ DB connected");
+    }
+    app.listen(3001, () => {
+      if (process.env.NODE_ENV !== "production") {
+        // eslint-disable-next-line no-console
+        console.log("\n🚀 API: http://localhost:3001\n");
+      }
+    });
   } catch (error) {
+    // eslint-disable-next-line no-console
     console.error(error);
     process.exit(1);
   }
