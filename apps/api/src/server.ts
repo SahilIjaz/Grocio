@@ -414,6 +414,24 @@ app.post("/api/v1/tenants/:tenantSlug/products", async (req, res) => {
   }
 });
 
+app.get("/api/v1/products/:productId", async (req, res) => {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: req.params.productId },
+      include: { category: true },
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    res.json(product);
+  } catch (error) {
+    console.error("Get product error:", error);
+    res.status(500).json({ error: "Failed to fetch product" });
+  }
+});
+
 app.put("/api/v1/products/:productId", async (req, res) => {
   try {
     const { name, description, price, stockQuantity, categoryId, imageUrls } = req.body;

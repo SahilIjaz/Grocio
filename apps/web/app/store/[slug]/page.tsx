@@ -34,6 +34,7 @@ export default function StorePage() {
   const [error, setError] = useState<string | null>(null);
   const [cart, setCart] = useState<Record<string, number>>({});
   const [searchTerm, setSearchTerm] = useState("");
+  const [sortBy, setSortBy] = useState<"name" | "price-low" | "price-high">("name");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -87,7 +88,16 @@ export default function StorePage() {
 
   const filteredProducts = products
     .filter((p) => !selectedCategory || p.category?.name === selectedCategory)
-    .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()));
+    .filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => {
+      if (sortBy === "price-low") {
+        return Number(a.price) - Number(b.price);
+      } else if (sortBy === "price-high") {
+        return Number(b.price) - Number(a.price);
+      } else {
+        return a.name.localeCompare(b.name);
+      }
+    });
 
   useEffect(() => {
     console.log("Products:", products);
@@ -274,10 +284,29 @@ export default function StorePage() {
                 </div>
               ) : (
                 <>
-                  <div style={{ marginBottom: "var(--spacing-6)" }}>
-                    <p style={{ color: "var(--gray-600)", fontSize: "0.95rem" }}>
+                  <div style={{ marginBottom: "var(--spacing-6)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <p style={{ color: "var(--gray-600)", fontSize: "0.95rem", margin: 0 }}>
                       Showing <strong>{filteredProducts.length}</strong> products
                     </p>
+                    <div style={{ display: "flex", gap: "var(--spacing-3)", alignItems: "center" }}>
+                      <label style={{ fontSize: "0.9rem", fontWeight: "500", color: "var(--gray-700)" }}>Sort by:</label>
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as "name" | "price-low" | "price-high")}
+                        style={{
+                          padding: "var(--spacing-2) var(--spacing-3)",
+                          borderRadius: "var(--radius-md)",
+                          border: "2px solid var(--gray-200)",
+                          fontSize: "0.9rem",
+                          cursor: "pointer",
+                          backgroundColor: "white",
+                        }}
+                      >
+                        <option value="name">Name (A-Z)</option>
+                        <option value="price-low">Price (Low to High)</option>
+                        <option value="price-high">Price (High to Low)</option>
+                      </select>
+                    </div>
                   </div>
 
                   <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))" }}>
