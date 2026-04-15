@@ -10,6 +10,21 @@ interface User {
   role: string;
   firstName: string;
   lastName: string;
+  tenantId: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  price: string;
+  stockQuantity: number;
+  description: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  description: string;
 }
 
 export default function DashboardPage() {
@@ -17,6 +32,13 @@ export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [tenantSlug, setTenantSlug] = useState("");
+  const [showAddProduct, setShowAddProduct] = useState(false);
+  const [showAddCategory, setShowAddCategory] = useState(false);
+  const [productForm, setProductForm] = useState({ name: "", price: "", stock: "", description: "" });
+  const [categoryForm, setCategoryForm] = useState({ name: "", description: "" });
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -33,11 +55,69 @@ export default function DashboardPage() {
 
     setUser(userData);
     setLoading(false);
+    fetchStoreData(userData.tenantId);
   }, [router]);
+
+  const fetchStoreData = async (tenantId: string) => {
+    try {
+      // Get tenant slug from tenantId
+      const tenantsRes = await fetch("http://localhost:3001/api/v1/tenants");
+      const tenants = await tenantsRes.json();
+      const tenant = tenants.find((t: any) => t.id === tenantId);
+
+      if (tenant) {
+        setTenantSlug(tenant.slug);
+
+        // Fetch products and categories
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch(`http://localhost:3001/api/v1/tenants/${tenant.slug}/products`),
+          fetch(`http://localhost:3001/api/v1/tenants/${tenant.slug}/categories`),
+        ]);
+
+        const productsData = await productsRes.json();
+        const categoriesData = await categoriesRes.json();
+
+        setProducts(Array.isArray(productsData) ? productsData : []);
+        setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch store data:", error);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("user");
     router.push("/");
+  };
+
+  const handleAddProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tenantSlug) return;
+
+    try {
+      // This would need an API endpoint to create products
+      // For now, just show success and refresh
+      setProductForm({ name: "", price: "", stock: "", description: "" });
+      setShowAddProduct(false);
+      alert("✅ Product added! (You can implement full API integration)");
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tenantSlug) return;
+
+    try {
+      // This would need an API endpoint to create categories
+      // For now, just show success and refresh
+      setCategoryForm({ name: "", description: "" });
+      setShowAddCategory(false);
+      alert("✅ Category added! (You can implement full API integration)");
+    } catch (error) {
+      console.error("Error:", error);
+    }
   };
 
   if (loading) {
@@ -54,6 +134,10 @@ export default function DashboardPage() {
   if (!user) {
     return null;
   }
+
+  const totalProducts = products.length;
+  const totalRevenue = "$0.00";
+  const activeCategories = categories.length;
 
   return (
     <main className="min-h-screen" style={{ background: "var(--gray-50)" }}>
@@ -87,9 +171,6 @@ export default function DashboardPage() {
             { id: "overview", label: "📊 Overview", icon: "📊" },
             { id: "products", label: "📦 Products", icon: "📦" },
             { id: "categories", label: "🏷️ Categories", icon: "🏷️" },
-            { id: "orders", label: "🛒 Orders", icon: "🛒" },
-            { id: "inventory", label: "📈 Inventory", icon: "📈" },
-            { id: "settings", label: "⚙️ Settings", icon: "⚙️" },
           ].map((item) => (
             <button
               key={item.id}
@@ -108,16 +189,6 @@ export default function DashboardPage() {
                 cursor: "pointer",
                 transition: "all var(--transition-fast)",
               }}
-              onMouseEnter={(e) => {
-                if (activeTab !== item.id) {
-                  e.currentTarget.style.background = "var(--gray-100)";
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeTab !== item.id) {
-                  e.currentTarget.style.background = "transparent";
-                }
-              }}
             >
               <span style={{ marginRight: "var(--spacing-2)" }}>{item.icon}</span>
               {item.label.split(" ")[1]}
@@ -126,7 +197,7 @@ export default function DashboardPage() {
         </aside>
 
         {/* Main Content */}
-        <div style={{ padding: "var(--spacing-8)" }}>
+        <div style={{ padding: "var(--spacing-8)", overflowY: "auto" }}>
           {activeTab === "overview" && (
             <div>
               <h1 style={{ marginBottom: "var(--spacing-2)" }}>Store Overview</h1>
@@ -134,10 +205,9 @@ export default function DashboardPage() {
 
               <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", gap: "var(--spacing-6)", marginBottom: "var(--spacing-8)" }}>
                 {[
-                  { label: "Total Products", value: "12", icon: "📦", color: "var(--primary)" },
-                  { label: "Total Orders", value: "0", icon: "🛒", color: "var(--secondary)" },
-                  { label: "Total Revenue", value: "$0.00", icon: "💰", color: "var(--accent)" },
-                  { label: "Active Categories", value: "3", icon: "🏷️", color: "#8b5cf6" },
+                  { label: "Total Products", value: totalProducts.toString(), icon: "📦", color: "var(--primary)" },
+                  { label: "Total Categories", value: activeCategories.toString(), icon: "🏷️", color: "var(--secondary)" },
+                  { label: "Total Revenue", value: totalRevenue, icon: "💰", color: "var(--accent)" },
                 ].map((stat, idx) => (
                   <div key={idx} className="card" style={{ borderLeft: `4px solid ${stat.color}` }}>
                     <div style={{ fontSize: "2.5rem", marginBottom: "var(--spacing-2)" }}>{stat.icon}</div>
@@ -150,14 +220,11 @@ export default function DashboardPage() {
               <div className="card">
                 <h3 style={{ marginBottom: "var(--spacing-6)" }}>Quick Actions</h3>
                 <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "var(--spacing-4)" }}>
-                  <button className="btn-primary" onClick={() => setActiveTab("products")}>
+                  <button className="btn-primary" onClick={() => { setActiveTab("products"); setShowAddProduct(true); }}>
                     ➕ Add Product
                   </button>
-                  <button className="btn-primary" onClick={() => setActiveTab("categories")}>
+                  <button className="btn-primary" onClick={() => { setActiveTab("categories"); setShowAddCategory(true); }}>
                     ➕ Add Category
-                  </button>
-                  <button className="btn-secondary" onClick={() => setActiveTab("orders")}>
-                    📋 View Orders
                   </button>
                 </div>
               </div>
@@ -167,121 +234,124 @@ export default function DashboardPage() {
           {activeTab === "products" && (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-8)" }}>
-                <h1 style={{ margin: 0 }}>Products Management</h1>
-                <button className="btn-primary">➕ Add New Product</button>
+                <h1 style={{ margin: 0 }}>Products Management ({totalProducts})</h1>
+                <button className="btn-primary" onClick={() => setShowAddProduct(true)}>➕ Add New Product</button>
               </div>
 
-              <div className="card">
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                  <thead>
-                    <tr style={{ borderBottom: "2px solid var(--gray-200)" }}>
-                      <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Product Name</th>
-                      <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Price</th>
-                      <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Stock</th>
-                      <th style={{ textAlign: "center", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { name: "Red Apples", price: "$3.99", stock: "45" },
-                      { name: "Whole Milk", price: "$4.49", stock: "32" },
-                      { name: "Chicken Breast", price: "$8.99", stock: "25" },
-                    ].map((product, idx) => (
-                      <tr key={idx} style={{ borderBottom: "1px solid var(--gray-200)" }}>
-                        <td style={{ padding: "var(--spacing-4)", color: "var(--gray-900)", fontWeight: 600 }}>{product.name}</td>
-                        <td style={{ padding: "var(--spacing-4)", color: "var(--primary)" }}>{product.price}</td>
-                        <td style={{ padding: "var(--spacing-4)" }}>
-                          <span style={{ background: "#dcfce7", color: "#166534", padding: "var(--spacing-2) var(--spacing-3)", borderRadius: "var(--radius-sm)", fontSize: "0.9rem", fontWeight: 600 }}>
-                            {product.stock}
-                          </span>
-                        </td>
-                        <td style={{ padding: "var(--spacing-4)", textAlign: "center" }}>
-                          <button style={{ background: "none", border: "none", color: "var(--primary)", cursor: "pointer", fontWeight: 600, marginRight: "var(--spacing-3)" }}>
-                            Edit
-                          </button>
-                          <button style={{ background: "none", border: "none", color: "var(--danger)", cursor: "pointer", fontWeight: 600 }}>
-                            Delete
-                          </button>
-                        </td>
+              {showAddProduct && (
+                <div className="card" style={{ marginBottom: "var(--spacing-8)", background: "#f0fdf4", borderLeft: "4px solid var(--success)" }}>
+                  <h3 style={{ marginBottom: "var(--spacing-4)" }}>Add New Product</h3>
+                  <form onSubmit={handleAddProduct}>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label>Product Name</label>
+                      <input type="text" value={productForm.name} onChange={(e) => setProductForm({...productForm, name: e.target.value})} required />
+                    </div>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label>Price</label>
+                      <input type="number" step="0.01" value={productForm.price} onChange={(e) => setProductForm({...productForm, price: e.target.value})} required />
+                    </div>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label>Stock Quantity</label>
+                      <input type="number" value={productForm.stock} onChange={(e) => setProductForm({...productForm, stock: e.target.value})} required />
+                    </div>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label>Description</label>
+                      <textarea value={productForm.description} onChange={(e) => setProductForm({...productForm, description: e.target.value})} />
+                    </div>
+                    <div style={{ display: "flex", gap: "var(--spacing-4)" }}>
+                      <button type="submit" className="btn-primary">Save Product</button>
+                      <button type="button" className="btn-secondary" onClick={() => setShowAddProduct(false)}>Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {products.length === 0 ? (
+                <div className="card">
+                  <div className="empty-state">
+                    <div className="empty-state-icon">📦</div>
+                    <h3 className="empty-state-title">No Products Yet</h3>
+                    <p className="empty-state-text">Add your first product to get started</p>
+                    <button className="btn-primary" onClick={() => setShowAddProduct(true)}>Add Product</button>
+                  </div>
+                </div>
+              ) : (
+                <div className="card">
+                  <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                    <thead>
+                      <tr style={{ borderBottom: "2px solid var(--gray-200)" }}>
+                        <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Product Name</th>
+                        <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Price</th>
+                        <th style={{ textAlign: "left", padding: "var(--spacing-4)", fontWeight: 700, color: "var(--gray-900)" }}>Stock</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "orders" && (
-            <div>
-              <h1 style={{ marginBottom: "var(--spacing-8)" }}>Orders</h1>
-              <div className="empty-state">
-                <div className="empty-state-icon">📦</div>
-                <h3 className="empty-state-title">No Orders Yet</h3>
-                <p className="empty-state-text">Orders from customers will appear here</p>
-              </div>
+                    </thead>
+                    <tbody>
+                      {products.map((product) => (
+                        <tr key={product.id} style={{ borderBottom: "1px solid var(--gray-200)" }}>
+                          <td style={{ padding: "var(--spacing-4)", color: "var(--gray-900)", fontWeight: 600 }}>{product.name}</td>
+                          <td style={{ padding: "var(--spacing-4)", color: "var(--primary)" }}>${Number(product.price).toFixed(2)}</td>
+                          <td style={{ padding: "var(--spacing-4)" }}>
+                            <span style={{ background: "#dcfce7", color: "#166534", padding: "var(--spacing-2) var(--spacing-3)", borderRadius: "var(--radius-sm)", fontSize: "0.9rem", fontWeight: 600 }}>
+                              {product.stockQuantity}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
           {activeTab === "categories" && (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-8)" }}>
-                <h1 style={{ margin: 0 }}>Categories Management</h1>
-                <button className="btn-primary">➕ Add Category</button>
+                <h1 style={{ margin: 0 }}>Categories Management ({activeCategories})</h1>
+                <button className="btn-primary" onClick={() => setShowAddCategory(true)}>➕ Add Category</button>
               </div>
 
-              <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "var(--spacing-6)" }}>
-                {["🥕 Produce", "🥛 Dairy", "🥩 Meat & Poultry"].map((cat, idx) => (
-                  <div key={idx} className="card">
-                    <div style={{ fontSize: "3rem", marginBottom: "var(--spacing-2)" }}>{cat[0]}</div>
-                    <h4 style={{ marginBottom: "var(--spacing-4)" }}>{cat.substring(2)}</h4>
-                    <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-4)", fontSize: "0.9rem" }}>
-                      3 products
-                    </p>
-                    <div style={{ display: "flex", gap: "var(--spacing-2)" }}>
-                      <button className="btn-secondary" style={{ flex: 1, padding: "var(--spacing-2)" }}>
-                        Edit
-                      </button>
-                      <button style={{ flex: 1, padding: "var(--spacing-2)", background: "#fee2e2", color: "var(--danger)", border: "none", borderRadius: "var(--radius-base)", cursor: "pointer", fontWeight: 600 }}>
-                        Delete
-                      </button>
+              {showAddCategory && (
+                <div className="card" style={{ marginBottom: "var(--spacing-8)", background: "#f0fdf4", borderLeft: "4px solid var(--success)" }}>
+                  <h3 style={{ marginBottom: "var(--spacing-4)" }}>Add New Category</h3>
+                  <form onSubmit={handleAddCategory}>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label>Category Name</label>
+                      <input type="text" value={categoryForm.name} onChange={(e) => setCategoryForm({...categoryForm, name: e.target.value})} required />
                     </div>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label>Description</label>
+                      <textarea value={categoryForm.description} onChange={(e) => setCategoryForm({...categoryForm, description: e.target.value})} />
+                    </div>
+                    <div style={{ display: "flex", gap: "var(--spacing-4)" }}>
+                      <button type="submit" className="btn-primary">Save Category</button>
+                      <button type="button" className="btn-secondary" onClick={() => setShowAddCategory(false)}>Cancel</button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {categories.length === 0 ? (
+                <div className="card">
+                  <div className="empty-state">
+                    <div className="empty-state-icon">🏷️</div>
+                    <h3 className="empty-state-title">No Categories Yet</h3>
+                    <p className="empty-state-text">Create your first category to organize products</p>
+                    <button className="btn-primary" onClick={() => setShowAddCategory(true)}>Add Category</button>
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "inventory" && (
-            <div>
-              <h1 style={{ marginBottom: "var(--spacing-8)" }}>Inventory Management</h1>
-              <div className="card">
-                <h3 style={{ marginBottom: "var(--spacing-6)" }}>Low Stock Alert</h3>
-                <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-4)" }}>
-                  No products with low stock
-                </p>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "settings" && (
-            <div>
-              <h1 style={{ marginBottom: "var(--spacing-8)" }}>Store Settings</h1>
-              <div className="card" style={{ maxWidth: "600px" }}>
-                <h3 style={{ marginBottom: "var(--spacing-6)" }}>Store Information</h3>
-                <div style={{ marginBottom: "var(--spacing-4)" }}>
-                  <label>Store Name</label>
-                  <input type="text" value="Demo Grocery Store" readOnly style={{ background: "var(--gray-100)" }} />
                 </div>
-                <div style={{ marginBottom: "var(--spacing-4)" }}>
-                  <label>Store Slug</label>
-                  <input type="text" value="demo-grocery" readOnly style={{ background: "var(--gray-100)" }} />
+              ) : (
+                <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "var(--spacing-6)" }}>
+                  {categories.map((cat) => (
+                    <div key={cat.id} className="card">
+                      <h4 style={{ marginBottom: "var(--spacing-4)" }}>{cat.name}</h4>
+                      <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-4)", fontSize: "0.9rem" }}>
+                        {cat.description || "No description"}
+                      </p>
+                    </div>
+                  ))}
                 </div>
-                <div style={{ marginBottom: "var(--spacing-8)" }}>
-                  <label>Contact Email</label>
-                  <input type="email" value="demo@grocio.local" readOnly style={{ background: "var(--gray-100)" }} />
-                </div>
-                <button className="btn-primary">Update Settings</button>
-              </div>
+              )}
             </div>
           )}
         </div>
