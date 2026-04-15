@@ -42,13 +42,15 @@ export default function CartPage() {
 
   // Load cart from localStorage on mount
   useEffect(() => {
+    if (typeof window === "undefined") return;
+
     const savedCart = localStorage.getItem(`cart_${slug}`);
     if (savedCart) {
       try {
         const cartData = JSON.parse(savedCart);
         // Handle both old format (object) and new format (array)
         if (Array.isArray(cartData)) {
-          setCartItems(cartData);
+          setCartItems(cartData.filter((item) => item.id && item.name && item.price !== undefined));
         } else {
           // Convert old format to new format if needed
           setCartItems(
@@ -61,7 +63,8 @@ export default function CartPage() {
           );
         }
       } catch (e) {
-        console.error("Failed to load cart from localStorage");
+        console.error("Failed to load cart from localStorage", e);
+        setCartItems([]);
       }
     }
   }, [slug]);
