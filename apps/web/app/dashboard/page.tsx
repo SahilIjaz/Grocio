@@ -71,6 +71,8 @@ export default function DashboardPage() {
   const [categorySearch, setCategorySearch] = useState("");
   const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
+  const [storeInfoForm, setStoreInfoForm] = useState({ name: "", contactEmail: "", address: "", contactPhone: "" });
+  const [isEditingStoreInfo, setIsEditingStoreInfo] = useState(false);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -324,6 +326,44 @@ export default function DashboardPage() {
     } catch (error) {
       console.error("Error:", error);
       alert(`❌ ${error instanceof Error ? error.message : "Failed to update store logo"}`);
+    }
+  };
+
+  const startEditStoreInfo = () => {
+    if (store) {
+      setStoreInfoForm({
+        name: store.name || "",
+        contactEmail: store.contactEmail || "",
+        address: store.address || "",
+        contactPhone: store.contactPhone || "",
+      });
+      setIsEditingStoreInfo(true);
+    }
+  };
+
+  const handleUpdateStoreInfo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!tenantSlug) return;
+
+    try {
+      const response = await fetch(`http://localhost:3001/api/v1/tenants/${tenantSlug}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(storeInfoForm),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to update store (${response.status})`);
+      }
+
+      const updatedStore = await response.json();
+      setStore(updatedStore);
+      setIsEditingStoreInfo(false);
+      alert("✅ Store information updated successfully!");
+    } catch (error) {
+      console.error("Error:", error);
+      alert(`❌ ${error instanceof Error ? error.message : "Failed to update store information"}`);
     }
   };
 
@@ -926,19 +966,103 @@ export default function DashboardPage() {
               </div>
 
               <div className="card" style={{ maxWidth: "600px" }}>
-                <h3 style={{ marginBottom: "var(--spacing-6)" }}>Store Information</h3>
-                <div style={{ marginBottom: "var(--spacing-4)" }}>
-                  <label>Store Name</label>
-                  <input type="text" value={store?.name || ""} readOnly style={{ background: "var(--gray-100)" }} />
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--spacing-6)" }}>
+                  <h3 style={{ margin: 0 }}>Store Information</h3>
+                  {!isEditingStoreInfo && (
+                    <button
+                      type="button"
+                      onClick={startEditStoreInfo}
+                      className="btn-primary"
+                      style={{ padding: "var(--spacing-2) var(--spacing-4)", fontSize: "0.9rem" }}
+                    >
+                      ✏️ Edit
+                    </button>
+                  )}
                 </div>
-                <div style={{ marginBottom: "var(--spacing-4)" }}>
-                  <label>Store Slug</label>
-                  <input type="text" value={store?.slug || ""} readOnly style={{ background: "var(--gray-100)" }} />
-                </div>
-                <div style={{ marginBottom: "var(--spacing-4)" }}>
-                  <label>Contact Email</label>
-                  <input type="email" value={store?.contactEmail || ""} readOnly style={{ background: "var(--gray-100)" }} />
-                </div>
+
+                {isEditingStoreInfo ? (
+                  <form onSubmit={handleUpdateStoreInfo}>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label>Store Name</label>
+                      <input
+                        type="text"
+                        value={storeInfoForm.name}
+                        onChange={(e) => setStoreInfoForm({ ...storeInfoForm, name: e.target.value })}
+                        style={{ width: "100%", padding: "var(--spacing-3)", borderRadius: "var(--radius-base)", border: "1px solid var(--gray-300)" }}
+                      />
+                    </div>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label>Store Slug</label>
+                      <input type="text" value={store?.slug || ""} readOnly style={{ background: "var(--gray-100)", width: "100%", padding: "var(--spacing-3)", borderRadius: "var(--radius-base)", border: "1px solid var(--gray-300)" }} />
+                      <p style={{ fontSize: "0.85rem", color: "var(--gray-600)", margin: "var(--spacing-2) 0 0 0" }}>Slug cannot be changed</p>
+                    </div>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label>Contact Email</label>
+                      <input
+                        type="email"
+                        value={storeInfoForm.contactEmail}
+                        onChange={(e) => setStoreInfoForm({ ...storeInfoForm, contactEmail: e.target.value })}
+                        style={{ width: "100%", padding: "var(--spacing-3)", borderRadius: "var(--radius-base)", border: "1px solid var(--gray-300)" }}
+                      />
+                    </div>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label>Address</label>
+                      <input
+                        type="text"
+                        value={storeInfoForm.address}
+                        onChange={(e) => setStoreInfoForm({ ...storeInfoForm, address: e.target.value })}
+                        placeholder="Store address"
+                        style={{ width: "100%", padding: "var(--spacing-3)", borderRadius: "var(--radius-base)", border: "1px solid var(--gray-300)" }}
+                      />
+                    </div>
+                    <div style={{ marginBottom: "var(--spacing-6)" }}>
+                      <label>Contact Phone</label>
+                      <input
+                        type="text"
+                        value={storeInfoForm.contactPhone}
+                        onChange={(e) => setStoreInfoForm({ ...storeInfoForm, contactPhone: e.target.value })}
+                        placeholder="Phone number"
+                        style={{ width: "100%", padding: "var(--spacing-3)", borderRadius: "var(--radius-base)", border: "1px solid var(--gray-300)" }}
+                      />
+                    </div>
+                    <div style={{ display: "flex", gap: "var(--spacing-4)" }}>
+                      <button type="submit" className="btn-primary" style={{ flex: 1 }}>
+                        💾 Save Changes
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsEditingStoreInfo(false)}
+                        className="btn-secondary"
+                        style={{ flex: 1 }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label style={{ fontWeight: 600, color: "var(--gray-700)" }}>Store Name</label>
+                      <p style={{ margin: "var(--spacing-2) 0 0 0", fontSize: "1rem" }}>{store?.name || "Not set"}</p>
+                    </div>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label style={{ fontWeight: 600, color: "var(--gray-700)" }}>Store Slug</label>
+                      <p style={{ margin: "var(--spacing-2) 0 0 0", fontSize: "1rem", fontFamily: "monospace", color: "var(--primary)" }}>{store?.slug || "Not set"}</p>
+                    </div>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label style={{ fontWeight: 600, color: "var(--gray-700)" }}>Contact Email</label>
+                      <p style={{ margin: "var(--spacing-2) 0 0 0", fontSize: "1rem" }}>{store?.contactEmail || "Not set"}</p>
+                    </div>
+                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                      <label style={{ fontWeight: 600, color: "var(--gray-700)" }}>Address</label>
+                      <p style={{ margin: "var(--spacing-2) 0 0 0", fontSize: "1rem" }}>{store?.address || "Not set"}</p>
+                    </div>
+                    <div>
+                      <label style={{ fontWeight: 600, color: "var(--gray-700)" }}>Contact Phone</label>
+                      <p style={{ margin: "var(--spacing-2) 0 0 0", fontSize: "1rem" }}>{store?.contactPhone || "Not set"}</p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           )}
