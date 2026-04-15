@@ -39,6 +39,8 @@ export default function DashboardPage() {
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [productForm, setProductForm] = useState({ name: "", price: "", stock: "", description: "", categoryId: "" });
   const [categoryForm, setCategoryForm] = useState({ name: "", description: "" });
+  const [categorySearch, setCategorySearch] = useState("");
+  const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
 
   useEffect(() => {
     const userStr = localStorage.getItem("user");
@@ -98,28 +100,50 @@ export default function DashboardPage() {
     }
 
     try {
-      // This would need an API endpoint to create products
-      // For now, just show success and refresh
+      const response = await fetch(`http://localhost:3001/api/v1/tenants/${tenantSlug}/products`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(productForm),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create product");
+      }
+
+      const newProduct = await response.json();
+      setProducts([...products, newProduct]);
       setProductForm({ name: "", price: "", stock: "", description: "", categoryId: "" });
       setShowAddProduct(false);
-      alert("✅ Product added! (You can implement full API integration)");
+      alert("✅ Product created successfully!");
     } catch (error) {
       console.error("Error:", error);
+      alert("❌ Failed to create product");
     }
   };
 
   const handleAddCategory = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!tenantSlug) return;
+    if (!tenantSlug || !categoryForm.name) return;
 
     try {
-      // This would need an API endpoint to create categories
-      // For now, just show success and refresh
+      const response = await fetch(`http://localhost:3001/api/v1/tenants/${tenantSlug}/categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(categoryForm),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create category");
+      }
+
+      const newCategory = await response.json();
+      setCategories([...categories, newCategory]);
       setCategoryForm({ name: "", description: "" });
       setShowAddCategory(false);
-      alert("✅ Category added! (You can implement full API integration)");
+      alert("✅ Category created successfully!");
     } catch (error) {
       console.error("Error:", error);
+      alert("❌ Failed to create category");
     }
   };
 
@@ -258,21 +282,64 @@ export default function DashboardPage() {
                 <div className="card" style={{ marginBottom: "var(--spacing-8)", background: "#f0fdf4", borderLeft: "4px solid var(--success)" }}>
                   <h3 style={{ marginBottom: "var(--spacing-4)" }}>Add New Product</h3>
                   <form onSubmit={handleAddProduct}>
-                    <div style={{ marginBottom: "var(--spacing-4)" }}>
+                    <div style={{ marginBottom: "var(--spacing-4)", position: "relative" }}>
                       <label>Category *</label>
-                      <select
-                        value={productForm.categoryId}
-                        onChange={(e) => setProductForm({...productForm, categoryId: e.target.value})}
-                        required
+                      <input
+                        type="text"
+                        placeholder="Search or select category..."
+                        value={categorySearch}
+                        onChange={(e) => {
+                          setCategorySearch(e.target.value);
+                          setShowCategoryDropdown(true);
+                        }}
+                        onFocus={() => setShowCategoryDropdown(true)}
+                        required={!productForm.categoryId}
                         style={{ width: "100%", padding: "var(--spacing-3) var(--spacing-4)", border: "2px solid var(--gray-200)", borderRadius: "var(--radius-base)", fontSize: "1rem" }}
-                      >
-                        <option value="">Select a category</option>
-                        {categories.map((cat) => (
-                          <option key={cat.id} value={cat.id}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
+                      />
+                      {showCategoryDropdown && (
+                        <div style={{
+                          position: "absolute",
+                          top: "100%",
+                          left: 0,
+                          right: 0,
+                          background: "white",
+                          border: "1px solid var(--gray-300)",
+                          borderRadius: "var(--radius-base)",
+                          marginTop: "var(--spacing-1)",
+                          zIndex: 10,
+                          maxHeight: "250px",
+                          overflowY: "auto",
+                          boxShadow: "var(--shadow-lg)",
+                        }}>
+                          {categories
+                            .filter((cat) => cat.name.toLowerCase().includes(categorySearch.toLowerCase()))
+                            .map((cat) => (
+                              <div
+                                key={cat.id}
+                                onClick={() => {
+                                  setProductForm({...productForm, categoryId: cat.id});
+                                  setCategorySearch(cat.name);
+                                  setShowCategoryDropdown(false);
+                                }}
+                                style={{
+                                  padding: "var(--spacing-3) var(--spacing-4)",
+                                  cursor: "pointer",
+                                  borderBottom: "1px solid var(--gray-100)",
+                                  transition: "background var(--transition-fast)",
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.background = "var(--primary-light)"}
+                                onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
+                              >
+                                {cat.name}
+                              </div>
+                            ))}
+                          {categories.filter((cat) => cat.name.toLowerCase().includes(categorySearch.toLowerCase())).length === 0 && (
+                            <div style={{ padding: "var(--spacing-3) var(--spacing-4)", color: "var(--gray-600)", textAlign: "center" }}>
+                              No categories found
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                     <div style={{ marginBottom: "var(--spacing-4)" }}>
                       <label>Product Name *</label>

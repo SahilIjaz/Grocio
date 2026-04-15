@@ -125,6 +125,65 @@ app.get("/api/v1/tenants/:tenantSlug/categories", async (req, res) => {
   }
 });
 
+app.post("/api/v1/tenants/:tenantSlug/categories", async (req, res) => {
+  try {
+    const { name, description } = req.body;
+    const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.tenantSlug } });
+    if (!tenant) return res.status(404).json({ error: "Tenant not found" });
+
+    const slug = name.toLowerCase().replace(/\s+/g, "-");
+    const category = await prisma.category.create({
+      data: {
+        tenantId: tenant.id,
+        name,
+        slug,
+        description: description || "",
+        sortOrder: 1,
+        isActive: true,
+      },
+    });
+
+    res.status(201).json(category);
+  } catch (error) {
+    console.error("Category creation error:", error);
+    res.status(500).json({ error: "Failed to create category" });
+  }
+});
+
+app.post("/api/v1/tenants/:tenantSlug/products", async (req, res) => {
+  try {
+    const { name, description, price, stockQuantity, categoryId } = req.body;
+    const tenant = await prisma.tenant.findUnique({ where: { slug: req.params.tenantSlug } });
+    if (!tenant) return res.status(404).json({ error: "Tenant not found" });
+
+    const slug = name.toLowerCase().replace(/\s+/g, "-");
+    const sku = `${slug.toUpperCase()}-${Date.now()}`;
+
+    const product = await prisma.product.create({
+      data: {
+        tenantId: tenant.id,
+        categoryId,
+        name,
+        slug,
+        description: description || "",
+        sku,
+        price: price.toString(),
+        stockQuantity: parseInt(stockQuantity),
+        unit: "unit",
+        isActive: true,
+        imageUrls: "[]",
+        tags: "[]",
+      },
+      include: { category: true },
+    });
+
+    res.status(201).json(product);
+  } catch (error) {
+    console.error("Product creation error:", error);
+    res.status(500).json({ error: "Failed to create product" });
+  }
+});
+
 app.post("/api/v1/cart/add", async (req, res) => {
   try {
     const { userId, tenantId, productId, quantity } = req.body;
