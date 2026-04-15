@@ -670,6 +670,7 @@ export default function DashboardPage() {
                       </p>
                       <div style={{ display: "flex", gap: "var(--spacing-2)" }}>
                         <button
+                          type="button"
                           onClick={() => startEditCategory(cat)}
                           style={{
                             flex: 1,
@@ -689,7 +690,11 @@ export default function DashboardPage() {
                           ✏️ Edit
                         </button>
                         <button
-                          onClick={() => handleDeleteCategory(cat.id)}
+                          type="button"
+                          onClick={() => {
+                            console.log("Delete button clicked for:", cat.id);
+                            handleDeleteCategory(cat.id);
+                          }}
                           style={{
                             flex: 1,
                             padding: "var(--spacing-2) var(--spacing-3)",
