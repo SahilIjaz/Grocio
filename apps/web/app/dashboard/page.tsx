@@ -105,18 +105,27 @@ export default function DashboardPage() {
         }
 
         // Fetch products, categories, and orders
+        console.log("Dashboard - Starting fetch for:", tenant.slug);
         const [productsRes, categoriesRes, ordersRes] = await Promise.all([
           fetch(`http://localhost:3001/api/v1/tenants/${tenant.slug}/products`),
           fetch(`http://localhost:3001/api/v1/tenants/${tenant.slug}/categories`),
           fetch(`http://localhost:3001/api/v1/tenants/${tenant.slug}/orders`),
         ]);
 
+        console.log("Dashboard - Response status - Products:", productsRes.status, "Categories:", categoriesRes.status, "Orders:", ordersRes.status);
+
         const productsData = await productsRes.json();
         const categoriesData = await categoriesRes.json();
         const ordersData = await ordersRes.json();
 
+        console.log("Dashboard - Products fetched:", productsData);
+        console.log("Dashboard - Categories fetched:", categoriesData);
+        console.log("Dashboard - Orders fetched:", ordersData);
+
         setProducts(Array.isArray(productsData) ? productsData : []);
         setCategories(Array.isArray(categoriesData) ? categoriesData : []);
+
+        console.log("Dashboard - Categories state updated to:", Array.isArray(categoriesData) ? categoriesData.length : 0);
 
         if (ordersData.orders) {
           setOrders(Array.isArray(ordersData.orders) ? ordersData.orders : []);
@@ -335,6 +344,8 @@ export default function DashboardPage() {
 
   const totalProducts = products.length;
   const activeCategories = categories.length;
+
+  console.log("Dashboard render - categories:", categories.length, categories);
 
   return (
     <main className="min-h-screen" style={{ background: "var(--gray-50)" }}>
