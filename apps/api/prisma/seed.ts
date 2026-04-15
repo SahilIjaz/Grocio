@@ -199,7 +199,8 @@ async function main(): Promise<void> {
           unit: "lb",
           isActive: true,
           isFeatured: true,
-          tags: ["organic", "fresh", "local"],
+          tags: JSON.stringify(["organic", "fresh", "local"]),
+          imageUrls: JSON.stringify([]),
         },
       }),
       prisma.product.upsert({
@@ -222,7 +223,8 @@ async function main(): Promise<void> {
           unit: "gallon",
           isActive: true,
           isFeatured: true,
-          tags: ["dairy", "fresh"],
+          tags: JSON.stringify(["dairy", "fresh"]),
+          imageUrls: JSON.stringify([]),
         },
       }),
       prisma.product.upsert({
@@ -244,7 +246,8 @@ async function main(): Promise<void> {
           stockQuantity: 25,
           unit: "lb",
           isActive: true,
-          tags: ["fresh", "meat"],
+          tags: JSON.stringify(["fresh", "meat"]),
+          imageUrls: JSON.stringify([]),
         },
       }),
     ]);
