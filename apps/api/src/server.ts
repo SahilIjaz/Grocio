@@ -5,8 +5,9 @@ import bcrypt from "bcrypt";
 import https from "https";
 import fs from "fs";
 import path from "path";
-import { PrismaClient } from "@prisma/client";
+import pkg from "@prisma/client";
 
+const { PrismaClient } = pkg;
 const app = express();
 const prisma = new PrismaClient();
 
