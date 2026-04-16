@@ -111,7 +111,7 @@ export default function CartClient() {
     setError(null);
 
     try {
-      const response = await fetch(`"https://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001"/api/v1/orders`, {
+      const response = await fetch(`"http://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001"/api/v1/orders`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -182,7 +182,7 @@ export default function CartClient() {
     try {
       if (authMode === "login") {
         // Login
-        const response = await fetch(`"https://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001"/api/v1/auth/login`, {
+        const response = await fetch(`"http://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001"/api/v1/auth/login`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -201,7 +201,7 @@ export default function CartClient() {
         setShowAuthModal(false);
       } else {
         // Signup
-        const response = await fetch(`"https://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001"/api/v1/auth/register`, {
+        const response = await fetch(`"http://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001"/api/v1/auth/register`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

@@ -18,7 +18,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const apiUrl = "https://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001";
+    const apiUrl = "http://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001";
     console.log("🔄 Fetching stores from:", `${apiUrl}/api/v1/tenants`);
 
     fetch(`${apiUrl}/api/v1/tenants`, {
