@@ -5,7 +5,7 @@ WORKDIR /app
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Copy all package files from root (for catalog resolution)
+# Copy all files for build
 COPY . .
 
 # Install all dependencies (needed for monorepo catalogs)
@@ -22,17 +22,14 @@ WORKDIR /app
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Copy root package files
-COPY package.json pnpm-lock.yaml ./
+# Copy entire repo structure (pnpm needs this for catalog resolution)
+COPY . .
 
-# Copy workspace packages (needed for catalog resolution in production install)
-COPY packages ./packages
+# Install dependencies (with all files present, catalogs resolve correctly)
+RUN pnpm install --frozen-lockfile
 
-# Copy API package
-COPY apps/api ./apps/api
-
-# Install production dependencies with catalog support
-RUN pnpm install --frozen-lockfile --prod
+# Remove dev dependencies
+RUN pnpm prune --prod
 
 # Copy built dist from builder stage
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
