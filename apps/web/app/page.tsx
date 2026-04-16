@@ -9,6 +9,7 @@ interface Tenant {
   slug: string;
   status: string;
   address?: string;
+  logoUrl?: string | null;
 }
 
 export default function Home() {

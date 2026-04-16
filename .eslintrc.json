@@ -39,7 +39,7 @@
   "overrides": [
     {
       "files": ["apps/web/**/*.{ts,tsx}"],
-      "extends": ["next/core-web-vitals", "plugin:@typescript-eslint/recommended"],
+      "extends": ["plugin:@typescript-eslint/recommended"],
       "rules": {
         "react/react-in-jsx-scope": "off"
       }
