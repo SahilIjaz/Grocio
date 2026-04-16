@@ -22,17 +22,14 @@ WORKDIR /app
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Copy entire repo structure (pnpm needs this for catalog resolution)
+# Copy entire repo structure
 COPY . .
-
-# Install dependencies (with all files present, catalogs resolve correctly)
-RUN pnpm install --frozen-lockfile
-
-# Remove dev dependencies with CI flag to skip TTY check
-RUN CI=true pnpm prune --prod
 
 # Copy built dist from builder stage
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
+
+# Install production dependencies only (skip prepare scripts)
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # Expose port
 EXPOSE 3001
