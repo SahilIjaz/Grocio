@@ -18,7 +18,8 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:3001/api/v1/tenants")
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+    fetch(`${apiUrl}/api/v1/tenants`)
       .then((res) => res.json())
       .then((data) => {
         setTenants(Array.isArray(data) ? data : []);

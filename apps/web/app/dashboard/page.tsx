@@ -112,7 +112,7 @@ export default function DashboardPage() {
   const fetchStoreData = async (tenantId: string) => {
     try {
       // Get tenant slug from tenantId
-      const tenantsRes = await fetch("http://localhost:3001/api/v1/tenants");
+      const tenantsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/tenants`);
       const tenants = await tenantsRes.json();
       const tenant = tenants.find((t: any) => t.id === tenantId);
 
