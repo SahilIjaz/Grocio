@@ -614,20 +614,24 @@ app.delete("/api/v1/orders/:orderId", async (req, res) => {
 
 const start = async (): Promise<void> => {
   try {
+    console.log("📋 Starting server...");
+    console.log("🔧 NODE_ENV:", process.env.NODE_ENV);
+    console.log("🔧 PORT:", process.env.PORT || 3001);
+    console.log("🔧 DATABASE_URL:", process.env.DATABASE_URL ? "✅ SET" : "❌ MISSING");
+    console.log("🔧 REDIS_URL:", process.env.REDIS_URL ? "✅ SET" : "❌ MISSING");
+
+    console.log("\n📡 Connecting to PostgreSQL...");
     await prisma.$connect();
-    if (process.env.NODE_ENV !== "production") {
-      // eslint-disable-next-line no-console
-      console.log("✅ DB connected");
-    }
-    app.listen(3001, () => {
-      if (process.env.NODE_ENV !== "production") {
-        // eslint-disable-next-line no-console
-        console.log("\n🚀 API: http://localhost:3001\n");
-      }
+    console.log("✅ PostgreSQL connected successfully!");
+
+    console.log("\n🔴 Starting Express server...");
+    app.listen(process.env.PORT || 3001, () => {
+      console.log("✅ Express server listening on port", process.env.PORT || 3001);
+      console.log("\n🚀 API: http://localhost:" + (process.env.PORT || 3001));
+      console.log("📊 Health check: http://localhost:" + (process.env.PORT || 3001) + "/api/v1/health\n");
     });
   } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error(error);
+    console.error("❌ ERROR during startup:", error);
     process.exit(1);
   }
 };
@@ -637,4 +641,5 @@ process.on("SIGINT", async () => {
   process.exit(0);
 });
 
+console.log("🎯 Server startup initiated...\n");
 start();
