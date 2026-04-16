@@ -18,7 +18,7 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const apiUrl = "process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "https://grocio-api-048w.onrender.com"";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "https://grocio-api-048w.onrender.com";
     console.log("🔄 Fetching stores from:", `${apiUrl}/api/v1/tenants`);
 
     fetch(`${apiUrl}/api/v1/tenants`, {

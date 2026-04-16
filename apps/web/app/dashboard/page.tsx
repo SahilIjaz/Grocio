@@ -112,7 +112,7 @@ export default function DashboardPage() {
   const fetchStoreData = async (tenantId: string) => {
     try {
       // Get tenant slug from tenantId
-      const tenantsRes = await fetch(`"process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "https://grocio-api-048w.onrender.com""/api/v1/tenants`);
+      const tenantsRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://grocio-api-048w.onrender.com/api/v1"}/tenants`);
       const tenants = await tenantsRes.json();
       const tenant = tenants.find((t: any) => t.id === tenantId);
 

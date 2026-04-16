@@ -72,8 +72,8 @@ export default function AdminPage() {
 
     // Fetch all data
     Promise.all([
-      fetch(`"process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "https://grocio-api-048w.onrender.com""/api/v1/tenants`).then((res) => res.json()),
-      fetch(`"process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "https://grocio-api-048w.onrender.com""/api/v1/analytics`).then((res) => res.json()),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://grocio-api-048w.onrender.com/api/v1"}/tenants`).then((res) => res.json()),
+      fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://grocio-api-048w.onrender.com/api/v1"}/analytics`).then((res) => res.json()),
     ])
       .then(([tenantsData, analyticsData]) => {
         setTenants(Array.isArray(tenantsData) ? tenantsData : []);

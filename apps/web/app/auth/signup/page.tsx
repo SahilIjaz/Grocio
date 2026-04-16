@@ -51,7 +51,7 @@ export default function SignUpPage() {
 
     try {
       // Register user
-      const registerRes = await fetch(`"process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "https://grocio-api-048w.onrender.com""/api/v1/auth/register`, {
+      const registerRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "https://grocio-api-048w.onrender.com/api/v1"}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
