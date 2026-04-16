@@ -1,6 +1,6 @@
 // API Configuration
 export const getApiUrl = (): string => {
-  return "http://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001";
+  return "https://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001";
 };
 
 export const apiUrl = getApiUrl();
