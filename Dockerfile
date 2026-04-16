@@ -1,52 +1,30 @@
-FROM node:20-alpine AS builder
-
-WORKDIR /app
-
-# Install pnpm globally
-RUN npm install -g pnpm
-
-# Copy all files for build
-COPY . .
-
-# Install all dependencies (needed for monorepo catalogs)
-RUN pnpm install --frozen-lockfile
-
-# Build API only
-RUN pnpm build --filter=@grocio/api
-
-# Production stage
 FROM node:20-alpine
 
 WORKDIR /app
 
-# Install pnpm globally, build tools for native modules, and openssl for Prisma
-RUN npm install -g pnpm && apk add --no-cache python3 make g++ openssl
+# Install pnpm
+RUN npm install -g pnpm
 
-# Set environment to skip prepare scripts
-ENV HUSKY=0
+# Install build dependencies for bcrypt
+RUN apk add --no-cache python3 make g++ openssl
 
-# Copy root package files and workspace structure
-COPY package.json pnpm-lock.yaml ./
-COPY pnpm-workspace.yaml ./
-COPY packages ./packages
-COPY apps/api ./apps/api
+# Set env vars
+ENV HUSKY=0 CI=true NODE_ENV=production
 
-# Copy built dist from builder stage
-COPY --from=builder /app/apps/api/dist ./apps/api/dist
+# Copy everything
+COPY . .
 
-# Remove prepare script from package.json to avoid husky error, but keep everything else
-RUN sed -i '/"prepare":/d' package.json
+# Install all dependencies (this will work because prepare script will try to run husky but we have HUSKY=0)
+RUN pnpm install --frozen-lockfile
 
-# Install ONLY production dependencies
-RUN CI=true pnpm install --frozen-lockfile --prod
+# Build API
+RUN pnpm build --filter=@grocio/api
 
-# Expose port
+# Expose and run
 EXPOSE 3001
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3001/api/v1/health', (r) => {if (r.statusCode !== 200) throw new Error(r.statusCode)})" || true
 
-# Start the application
 WORKDIR /app/apps/api
 CMD ["node", "dist/server.js"]
