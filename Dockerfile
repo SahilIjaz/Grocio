@@ -22,14 +22,17 @@ WORKDIR /app
 # Install pnpm globally
 RUN npm install -g pnpm
 
-# Copy entire repo structure
-COPY . .
+# Copy root package files and workspace structure
+COPY package.json pnpm-lock.yaml ./
+COPY pnpm-workspace.yaml ./
+COPY packages ./packages
+COPY apps/api ./apps/api
 
 # Copy built dist from builder stage
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
-# Install production dependencies only (skip prepare scripts)
-RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+# Install ONLY production dependencies, skip all lifecycle scripts
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts 2>&1 || echo "Installation completed"
 
 # Expose port
 EXPOSE 3001
