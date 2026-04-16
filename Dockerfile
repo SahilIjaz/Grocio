@@ -19,8 +19,8 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install pnpm globally
-RUN npm install -g pnpm
+# Install pnpm globally and build tools for native modules
+RUN npm install -g pnpm && apk add --no-cache python3 make g++
 
 # Copy root package files and workspace structure
 COPY package.json pnpm-lock.yaml ./
@@ -31,8 +31,11 @@ COPY apps/api ./apps/api
 # Copy built dist from builder stage
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
-# Install ONLY production dependencies, skip all lifecycle scripts
-RUN pnpm install --frozen-lockfile --prod --ignore-scripts 2>&1 || echo "Installation completed"
+# Install ONLY production dependencies
+RUN pnpm install --frozen-lockfile --prod
+
+# Rebuild native modules (bcrypt, etc.)
+RUN pnpm rebuild
 
 # Expose port
 EXPOSE 3001
