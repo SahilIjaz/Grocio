@@ -21,17 +21,25 @@ export default function Home() {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
     fetch(`${apiUrl}/api/v1/tenants`, {
+      method: "GET",
       headers: {
-        "Cache-Control": "no-cache",
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0",
       },
+      cache: "no-store",
     })
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
       .then((data) => {
         setTenants(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {
-        setError(err.message);
+        setError(err instanceof Error ? err.message : "Failed to load stores");
         setLoading(false);
       });
   }, []);
