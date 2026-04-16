@@ -12,7 +12,15 @@ const app = express();
 const prisma = new PrismaClient();
 
 app.use(helmet());
-app.use(cors({ origin: "*" }));
+app.use(cors({
+  origin: [
+    "http://localhost:3000",
+    "http://localhost:3001",
+    "https://grocio-app-frontend.netlify.app",
+    process.env.FRONTEND_URL || ""
+  ].filter(Boolean),
+  credentials: true
+}));
 app.use(express.json({ limit: "50mb" }));
 
 app.get("/api/v1/health", (req, res) => res.json({ status: "ok", timestamp: new Date().toISOString() }));
