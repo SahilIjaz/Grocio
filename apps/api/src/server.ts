@@ -223,10 +223,10 @@ app.get("/api/v1/tenants/:slug/orders", async (req, res) => {
     });
 
     // Calculate revenue based on order status
-    const deliveredOrders = orders.filter((o) => o.status === "delivered");
-    const pendingOrders = orders.filter((o) => o.status === "pending");
-    const processingOrders = orders.filter((o) => o.status === "confirmed" || o.status === "shipped");
-    const cancelledOrders = orders.filter((o) => o.status === "cancelled");
+    const deliveredOrders = orders.filter((o: any) => o.status === "delivered");
+    const pendingOrders = orders.filter((o: any) => o.status === "pending");
+    const processingOrders = orders.filter((o: any) => o.status === "confirmed" || o.status === "shipped");
+    const cancelledOrders = orders.filter((o: any) => o.status === "cancelled");
 
     const stats = {
       totalOrders: orders.length,
@@ -235,9 +235,9 @@ app.get("/api/v1/tenants/:slug/orders", async (req, res) => {
       processingOrders: processingOrders.length,
       cancelledOrders: cancelledOrders.length,
       // Only count delivered orders as revenue (industry standard)
-      revenue: deliveredOrders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0),
-      pendingOrdersValue: pendingOrders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0),
-      processingOrdersValue: processingOrders.reduce((sum, order) => sum + Number(order.totalAmount || 0), 0),
+      revenue: deliveredOrders.reduce((sum: number, order: any) => sum + Number(order.totalAmount || 0), 0),
+      pendingOrdersValue: pendingOrders.reduce((sum: number, order: any) => sum + Number(order.totalAmount || 0), 0),
+      processingOrdersValue: processingOrders.reduce((sum: number, order: any) => sum + Number(order.totalAmount || 0), 0),
       orders,
     };
 
@@ -549,7 +549,7 @@ app.post("/api/v1/orders", async (req, res) => {
       return {
         productId: item.id,
         productName: item.name,
-        productSku: product?.sku || "UNKNOWN",
+        productSku: (product as any)?.sku || "UNKNOWN",
         quantity: item.quantity,
         unitPrice: item.price.toString(),
         totalPrice: itemTotal.toString(),

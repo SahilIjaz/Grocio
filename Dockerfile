@@ -28,8 +28,8 @@ COPY . .
 # Install dependencies (with all files present, catalogs resolve correctly)
 RUN pnpm install --frozen-lockfile
 
-# Remove dev dependencies
-RUN pnpm prune --prod
+# Remove dev dependencies with CI flag to skip TTY check
+RUN CI=true pnpm prune --prod
 
 # Copy built dist from builder stage
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
