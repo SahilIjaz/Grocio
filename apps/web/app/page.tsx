@@ -26,6 +26,7 @@ export default function Home() {
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
     })
       .then((res) => {
         console.log("Response received:", res.status);
