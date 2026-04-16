@@ -34,8 +34,8 @@ COPY apps/api ./apps/api
 # Copy built dist from builder stage
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
-# Install ONLY production dependencies, skip all scripts (husky, etc.)
-RUN CI=true pnpm install --frozen-lockfile --prod --ignore-scripts
+# Install ONLY production dependencies (allow prepare script to fail, we only need postinstall)
+RUN CI=true pnpm install --frozen-lockfile --prod 2>&1 || true
 
 # Expose port
 EXPOSE 3001
