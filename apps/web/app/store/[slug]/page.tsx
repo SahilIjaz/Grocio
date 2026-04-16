@@ -40,8 +40,8 @@ export default function StorePage() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const productsUrl = `http://localhost:3001/api/v1/tenants/${slug}/products`;
-        const categoriesUrl = `http://localhost:3001/api/v1/tenants/${slug}/categories`;
+        const productsUrl = `${process.env.NEXT_PUBLIC_API_URL}/tenants/${slug}/products`;
+        const categoriesUrl = `${process.env.NEXT_PUBLIC_API_URL}/tenants/${slug}/categories`;
 
         const [productsRes, categoriesRes] = await Promise.all([
           fetch(productsUrl),

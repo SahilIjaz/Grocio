@@ -91,7 +91,7 @@ export default function AdminPage() {
       ...(userRole && { role: userRole }),
     });
 
-    fetch(`http://localhost:3001/api/v1/users?${params}`)
+    fetch(`${process.env.NEXT_PUBLIC_API_URL}/users?${params}`)
       .then((res) => res.json())
       .then((data: UsersResponse) => {
         setUsers(data.data);

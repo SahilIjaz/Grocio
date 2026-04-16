@@ -126,9 +126,9 @@ export default function DashboardPage() {
         // Fetch products, categories, and orders
         console.log("Dashboard - Starting fetch for:", tenant.slug);
         const [productsRes, categoriesRes, ordersRes] = await Promise.all([
-          fetch(`http://localhost:3001/api/v1/tenants/${tenant.slug}/products`),
-          fetch(`http://localhost:3001/api/v1/tenants/${tenant.slug}/categories`),
-          fetch(`http://localhost:3001/api/v1/tenants/${tenant.slug}/orders`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/tenants/${tenant.slug}/products`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/tenants/${tenant.slug}/categories`),
+          fetch(`${process.env.NEXT_PUBLIC_API_URL}/tenants/${tenant.slug}/orders`),
         ]);
 
         console.log("Dashboard - Response status - Products:", productsRes.status, "Categories:", categoriesRes.status, "Orders:", ordersRes.status);
@@ -176,7 +176,7 @@ export default function DashboardPage() {
     try {
       const imageUrls = productImagePreviews.length > 0 ? productImagePreviews : [];
 
-      const response = await fetch(`http://localhost:3001/api/v1/tenants/${tenantSlug}/products`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tenants/${tenantSlug}/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -215,7 +215,7 @@ export default function DashboardPage() {
     try {
       if (editingCategory) {
         // Update existing category
-        const response = await fetch(`http://localhost:3001/api/v1/categories/${editingCategory}`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories/${editingCategory}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(categoryForm),
@@ -232,7 +232,7 @@ export default function DashboardPage() {
         // Create new category
         if (!tenantSlug) return;
 
-        const response = await fetch(`http://localhost:3001/api/v1/tenants/${tenantSlug}/categories`, {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tenants/${tenantSlug}/categories`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(categoryForm),
@@ -262,7 +262,7 @@ export default function DashboardPage() {
     }
 
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/categories/${categoryId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/categories/${categoryId}`, {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
       });
@@ -324,7 +324,7 @@ export default function DashboardPage() {
     if (!tenantSlug || !storeLogoPreview) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/tenants/${tenantSlug}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tenants/${tenantSlug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -363,7 +363,7 @@ export default function DashboardPage() {
     if (!tenantSlug) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/tenants/${tenantSlug}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/tenants/${tenantSlug}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(storeInfoForm),
@@ -400,7 +400,7 @@ export default function DashboardPage() {
     if (!confirm("Are you sure you want to delete this product? This action cannot be undone.")) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/products/${productId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`, {
         method: "DELETE",
       });
 
@@ -423,8 +423,8 @@ export default function DashboardPage() {
     try {
       const method = editingProduct ? "PUT" : "POST";
       const url = editingProduct
-        ? `http://localhost:3001/api/v1/products/${editingProduct.id}`
-        : `http://localhost:3001/api/v1/tenants/${tenantSlug}/products`;
+        ? `${process.env.NEXT_PUBLIC_API_URL}/products/${editingProduct.id}`
+        : `${process.env.NEXT_PUBLIC_API_URL}/tenants/${tenantSlug}/products`;
 
       const response = await fetch(url, {
         method,
@@ -466,7 +466,7 @@ export default function DashboardPage() {
     if (!editingOrder) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/orders/${editingOrder.id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/${editingOrder.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status: orderStatusUpdate }),
@@ -487,7 +487,7 @@ export default function DashboardPage() {
     if (!confirm("Are you sure you want to delete this order? This action cannot be undone.")) return;
 
     try {
-      const response = await fetch(`http://localhost:3001/api/v1/orders/${orderId}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/orders/${orderId}`, {
         method: "DELETE",
       });
 
