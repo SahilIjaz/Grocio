@@ -51,7 +51,7 @@ export default function SignUpPage() {
 
     try {
       // Register user
-      const registerRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/v1/auth/register`, {
+      const registerRes = await fetch(`"http://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001"/api/v1/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
