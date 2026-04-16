@@ -35,7 +35,7 @@ COPY apps/api ./apps/api
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
 # Install ONLY production dependencies, skip all scripts (husky, etc.)
-RUN pnpm install --frozen-lockfile --prod --ignore-scripts
+RUN CI=true pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # Rebuild native modules (bcrypt, etc.) - this compiles C++ bindings
 RUN pnpm rebuild --prod
