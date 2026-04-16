@@ -17,6 +17,9 @@ COPY . .
 # Install all dependencies (this will work because prepare script will try to run husky but we have HUSKY=0)
 RUN pnpm install --frozen-lockfile
 
+# Generate Prisma client
+RUN pnpm prisma generate --schema=./apps/api/prisma/schema.prisma
+
 # Build API
 RUN pnpm build --filter=@grocio/api
 
