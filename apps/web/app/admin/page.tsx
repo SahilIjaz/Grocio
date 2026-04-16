@@ -72,8 +72,8 @@ export default function AdminPage() {
 
     // Fetch all data
     Promise.all([
-      fetch(`"https://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001"/api/v1/tenants`).then((res) => res.json()),
-      fetch(`"https://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001"/api/v1/analytics`).then((res) => res.json()),
+      fetch(`"process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "https://grocio-api-048w.onrender.com""/api/v1/tenants`).then((res) => res.json()),
+      fetch(`"process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "https://grocio-api-048w.onrender.com""/api/v1/analytics`).then((res) => res.json()),
     ])
       .then(([tenantsData, analyticsData]) => {
         setTenants(Array.isArray(tenantsData) ? tenantsData : []);
