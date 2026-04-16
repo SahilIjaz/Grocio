@@ -1,0 +1,114 @@
+services:
+  # PostgreSQL Database Service
+  - type: pserv
+    name: grocio-postgres
+    ipAddress: private
+    plan: free
+    region: ohio
+    databaseName: grocio_db
+    user: grocio_user
+
+  # Redis Cache Service
+  - type: redis
+    name: grocio-redis
+    ipAddress: private
+    plan: free
+    region: ohio
+    maxmemoryPolicy: allkeys-lru
+
+  # Backend API Service
+  - type: web
+    name: grocio-api
+    runtime: node
+    plan: free
+    region: ohio
+    buildCommand: pnpm install && pnpm build
+    startCommand: cd apps/api && node dist/server.js
+
+    # Use environment group or specify directly
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: API_PREFIX
+        value: /api/v1
+      - key: LOG_LEVEL
+        value: info
+      - key: RATE_LIMIT_WINDOW_MS
+        value: 900000
+      - key: RATE_LIMIT_MAX_REQUESTS
+        value: 100
+      - key: BCRYPT_ROUNDS
+        value: 10
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+
+      # Database connection
+      - key: DATABASE_URL
+        fromDatabase:
+          name: grocio-postgres
+          property: connectionString
+
+      # Redis connection
+      - key: REDIS_URL
+        fromService:
+          name: grocio-redis
+          type: redis
+          property: connectionString
+
+      # Sensitive values - set via Render dashboard (referenced from env group)
+      - key: JWT_PRIVATE_KEY
+        scope: run
+      - key: JWT_PUBLIC_KEY
+        scope: run
+      - key: CLOUDINARY_NAME
+        scope: run
+      - key: CLOUDINARY_API_KEY
+        scope: run
+      - key: CLOUDINARY_API_SECRET
+        scope: run
+      - key: SMTP_USER
+        scope: run
+      - key: SMTP_PASSWORD
+        scope: run
+      - key: CORS_ORIGINS
+        scope: run
+      - key: SESSION_SECRET
+        scope: run
+
+    # Pre-deploy script to run migrations
+    preDeployCommand: cd apps/api && pnpm prisma migrate deploy
+
+    # Health check
+    healthCheckPath: /api/v1/health
+
+    # Auto-deploy on git push
+    autoDeploy: true
+
+    # Environment group for sensitive variables
+    envGroupId: grocio-secrets
+
+  # Optional: Monitoring/Alerting
+  # - type: notification
+  #   name: deployment-alerts
+  #   alertingChannels:
+  #     - email: your_email@example.com
+
+# Databases
+databases:
+  - name: grocio-postgres
+    databaseName: grocio_db
+    user: grocio_user
+    plan: free
+    region: ohio
+    postgresMajorVersion: 15
+
+# Redis services
+redis:
+  - name: grocio-redis
+    maxmemoryPolicy: allkeys-lru
+    plan: free
+    region: ohio
