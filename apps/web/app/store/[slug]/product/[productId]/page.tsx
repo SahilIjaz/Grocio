@@ -34,7 +34,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const url = `http://localhost:3001/api/v1/products/${productId}`;
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`;
         const res = await fetch(url);
 
         if (!res.ok) {
