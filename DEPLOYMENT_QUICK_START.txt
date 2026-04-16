@@ -1,0 +1,235 @@
+================================================================================
+                   GROCIO BACKEND DEPLOYMENT - QUICK START
+================================================================================
+
+This is your quick reference guide. For detailed instructions, see the markdown files.
+
+================================================================================
+1. FILES CREATED
+================================================================================
+
+✅ .github/workflows/deploy-backend.yml  - GitHub Actions workflow
+✅ .env.example                          - Environment variables template
+✅ render.yaml                           - Render infrastructure config
+✅ DEPLOY_BACKEND.md                     - Comprehensive deployment guide
+✅ GITHUB_SECRETS_SETUP.md               - Step-by-step secret configuration
+✅ DEPLOYMENT_CHECKLIST.md               - Phase-by-phase checklist
+✅ ENV_VARIABLES_REFERENCE.md            - Complete variable reference
+✅ DEPLOYMENT_FILES_SUMMARY.md           - Overview of all files
+✅ DEPLOYMENT_QUICK_START.txt            - This file
+
+================================================================================
+2. QUICK 5-STEP DEPLOYMENT
+================================================================================
+
+STEP 1: Generate JWT Keys (run locally)
+--------------------------------------
+openssl genrsa -out private.key 4096
+openssl rsa -in private.key -pubout -out public.key
+cat private.key    # Keep this secret!
+cat public.key     # Also keep this secret!
+
+
+STEP 2: Create Render Services
+-------------------------------
+1. Log in to https://render.com
+2. Create PostgreSQL database:
+   - Name: grocio-postgres
+   - Database: grocio_db
+   - Copy Internal Database URL
+3. Create Redis cache:
+   - Name: grocio-redis
+   - Copy Redis URL
+4. Create Web Service for API:
+   - Name: grocio-api
+   - Connect GitHub repository
+   - Build: pnpm install && pnpm build
+   - Start: cd apps/api && node dist/server.js
+   - Copy Deploy Hook URL
+
+
+STEP 3: Add GitHub Secrets (12 total)
+-------------------------------------
+Go to GitHub → Settings → Secrets → Add:
+
+RENDER_DEPLOY_HOOK_URL = [from Step 2, Web Service settings]
+DATABASE_URL = [from Step 2, PostgreSQL]
+REDIS_URL = [from Step 2, Redis]
+JWT_PRIVATE_KEY = [from Step 1]
+JWT_PUBLIC_KEY = [from Step 1]
+CLOUDINARY_NAME = [from your Cloudinary account]
+CLOUDINARY_API_KEY = [from your Cloudinary account]
+CLOUDINARY_API_SECRET = [from your Cloudinary account]
+SMTP_USER = [your email]
+SMTP_PASSWORD = [Gmail app password]
+CORS_ORIGINS = [your Vercel frontend URL]
+SESSION_SECRET = [generate: openssl rand -hex 32]
+
+
+STEP 4: Add Render Environment Variables
+-----------------------------------------
+Go to Render → Web Service → Settings → Environment → Add:
+
+NODE_ENV=production
+PORT=3001
+API_PREFIX=/api/v1
+DATABASE_URL=[paste from GitHub Secret]
+REDIS_URL=[paste from GitHub Secret]
+JWT_PRIVATE_KEY=[paste from GitHub Secret]
+JWT_PUBLIC_KEY=[paste from GitHub Secret]
+CLOUDINARY_NAME=[paste from GitHub Secret]
+CLOUDINARY_API_KEY=[paste from GitHub Secret]
+CLOUDINARY_API_SECRET=[paste from GitHub Secret]
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=[paste from GitHub Secret]
+SMTP_PASSWORD=[paste from GitHub Secret]
+SMTP_FROM=noreply@grocio.com
+CORS_ORIGINS=[paste from GitHub Secret]
+LOG_LEVEL=info
+BCRYPT_ROUNDS=10
+SESSION_SECRET=[paste from GitHub Secret]
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+Click "Save"
+
+
+STEP 5: Push Code to Main
+-------------------------
+git add .github/workflows/deploy-backend.yml .env.example render.yaml
+git commit -m "ci: setup backend deployment to Render"
+git push origin main
+
+Done! GitHub Actions will trigger, build, and deploy automatically.
+
+================================================================================
+3. VERIFY DEPLOYMENT
+================================================================================
+
+After ~2 minutes, test:
+
+curl https://your-api.onrender.com/api/v1/health
+Expected: {"status":"ok"}
+
+If it fails:
+1. Check GitHub Actions logs: GitHub repo → Actions
+2. Check Render logs: Render dashboard → Logs
+3. Verify all environment variables are set in Render
+
+
+================================================================================
+4. DETAILED INSTRUCTIONS
+================================================================================
+
+For detailed step-by-step instructions, see:
+
+📖 DEPLOYMENT_CHECKLIST.md
+   - Phase-by-phase guide with checkboxes
+   - Best for: Following along systematically
+
+📖 GITHUB_SECRETS_SETUP.md
+   - Detailed steps for each secret
+   - Where to find each value
+   - How to generate keys
+
+📖 DEPLOY_BACKEND.md
+   - Complete comprehensive guide
+   - Troubleshooting section
+   - Monitoring & logs
+
+📖 ENV_VARIABLES_REFERENCE.md
+   - Complete variable reference
+   - Descriptions of each variable
+   - Common mistakes and solutions
+
+
+================================================================================
+5. ENVIRONMENT VARIABLES SUMMARY
+================================================================================
+
+REQUIRED SECRETS (in both GitHub Secrets AND Render):
+  DATABASE_URL           - PostgreSQL connection
+  REDIS_URL              - Redis connection
+  JWT_PRIVATE_KEY        - For signing tokens
+  JWT_PUBLIC_KEY         - For verifying tokens
+  CLOUDINARY_NAME        - Image upload service
+  CLOUDINARY_API_KEY     - Image upload service
+  CLOUDINARY_API_SECRET  - Image upload service
+  SMTP_USER              - Email address
+  SMTP_PASSWORD          - App-specific password
+  CORS_ORIGINS           - Frontend URL
+  SESSION_SECRET         - Random secret
+  RENDER_DEPLOY_HOOK_URL - Render webhook (GitHub only)
+
+DEFAULTS (only in Render):
+  NODE_ENV=production
+  PORT=3001
+  API_PREFIX=/api/v1
+  SMTP_HOST=smtp.gmail.com
+  SMTP_PORT=587
+  SMTP_FROM=noreply@grocio.com
+  LOG_LEVEL=info
+  BCRYPT_ROUNDS=10
+  RATE_LIMIT_WINDOW_MS=900000
+  RATE_LIMIT_MAX_REQUESTS=100
+
+
+================================================================================
+6. COMMON ISSUES
+================================================================================
+
+ISSUE: Build fails on GitHub Actions
+→ Check local: pnpm install && pnpm build --filter=@grocio/api
+
+ISSUE: App crashes: "DATABASE_URL is undefined"
+→ Check Render Environment tab - must have DATABASE_URL variable set
+
+ISSUE: Deployment never starts
+→ Check GitHub Actions logs for errors
+→ Verify RENDER_DEPLOY_HOOK_URL is correct in GitHub Secrets
+
+ISSUE: API returns CORS error
+→ Verify CORS_ORIGINS in Render matches your frontend URL
+→ Example: https://grocio.vercel.app
+
+ISSUE: Database connection error
+→ Verify DATABASE_URL in Render environment
+→ Use Internal URL if on Render: dpg-xxxxx.render.internal
+
+
+================================================================================
+7. NEXT STEPS AFTER BACKEND DEPLOYMENT
+================================================================================
+
+1. ✅ Backend deployed to Render
+2. ⬜ Deploy frontend to Vercel (see DEPLOY_FRONTEND.md)
+3. ⬜ Update frontend API URL to Render endpoint
+4. ⬜ Test end-to-end from frontend
+5. ⬜ Set up monitoring and alerts
+6. ⬜ Configure custom domain (optional)
+
+
+================================================================================
+8. NEED HELP?
+================================================================================
+
+Read these files in order:
+1. DEPLOYMENT_CHECKLIST.md - for step-by-step guidance
+2. GITHUB_SECRETS_SETUP.md - for secret configuration
+3. DEPLOY_BACKEND.md - for detailed troubleshooting
+4. ENV_VARIABLES_REFERENCE.md - for variable descriptions
+
+External resources:
+- Render docs: https://render.com/docs
+- GitHub Actions: https://docs.github.com/en/actions
+- Prisma: https://www.prisma.io/docs
+
+
+================================================================================
+                            YOU'RE ALL SET! 🚀
+================================================================================
+
+Follow the 5-step deployment above, then refer to detailed guides as needed.
+Your backend will be live on Render with automatic CI/CD via GitHub Actions!
+
