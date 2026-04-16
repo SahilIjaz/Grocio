@@ -2,6 +2,9 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import bcrypt from "bcrypt";
+import https from "https";
+import fs from "fs";
+import path from "path";
 import { PrismaClient } from "@prisma/client";
 
 const app = express();
@@ -625,10 +628,34 @@ const start = async (): Promise<void> => {
     console.log("✅ PostgreSQL connected successfully!");
 
     console.log("\n🔴 Starting Express server...");
-    app.listen(process.env.PORT || 3001, () => {
-      console.log("✅ Express server listening on port", process.env.PORT || 3001);
-      console.log("\n🚀 API: http://localhost:" + (process.env.PORT || 3001));
-      console.log("📊 Health check: http://localhost:" + (process.env.PORT || 3001) + "/api/v1/health\n");
+
+    // Try to load SSL certificates for HTTPS
+    const certPath = path.join(process.cwd(), "certs", "cert.pem");
+    const keyPath = path.join(process.cwd(), "certs", "key.pem");
+
+    const port = process.env.PORT || 3001;
+    let server;
+
+    if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
+      // Use HTTPS if certificates exist
+      const httpsOptions = {
+        cert: fs.readFileSync(certPath),
+        key: fs.readFileSync(keyPath),
+      };
+      server = https.createServer(httpsOptions, app);
+      server.listen(port, () => {
+        console.log("✅ Express server listening on port", port, "(HTTPS)");
+        console.log("\n🚀 API: https://localhost:" + port);
+        console.log("📊 Health check: https://localhost:" + port + "/api/v1/health\n");
+      });
+    } else {
+      // Fallback to HTTP if certificates don't exist
+      server = app.listen(port, () => {
+        console.log("✅ Express server listening on port", port, "(HTTP)");
+        console.log("\n🚀 API: http://localhost:" + port);
+        console.log("📊 Health check: http://localhost:" + port + "/api/v1/health\n");
+      });
+    }
     });
   } catch (error) {
     console.error("❌ ERROR during startup:", error);
