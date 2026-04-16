@@ -1,6 +1,6 @@
 // API Configuration
 export const getApiUrl = (): string => {
-  return "https://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001";
+  return process.env.NEXT_PUBLIC_API_URL?.replace("/api/v1", "") || "https://grocio-api-048w.onrender.com";
 };
 
 export const apiUrl = getApiUrl();
