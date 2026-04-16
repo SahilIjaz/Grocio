@@ -2,10 +2,18 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy only necessary files from apps/api
-COPY package.json package.json
-COPY dist dist
-COPY node_modules node_modules
+# Install pnpm globally
+RUN npm install -g pnpm
+
+# Copy package files
+COPY package.json .
+COPY pnpm-lock.yaml .
+
+# Install production dependencies only
+RUN pnpm install --prod --no-frozen-lockfile
+
+# Copy the rest of the API files
+COPY . .
 
 # Expose port
 EXPOSE 3001
