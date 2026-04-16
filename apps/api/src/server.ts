@@ -540,7 +540,7 @@ app.post("/api/v1/orders", async (req, res) => {
     const products = await prisma.product.findMany({
       where: { id: { in: productIds } }
     });
-    const productMap = new Map(products.map(p => [p.id, p]));
+    const productMap = new Map(products.map((p: any) => [p.id, p]));
 
     const orderItems = items.map((item: any) => {
       const product = productMap.get(item.id);
