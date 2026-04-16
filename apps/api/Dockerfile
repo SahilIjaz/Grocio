@@ -3,8 +3,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Copy root level files (since build context is apps/api)
-COPY ../.. ./
+# Copy package files from root
+COPY package.json pnpm-lock.yaml ./
+
+# Copy packages and apps
+COPY packages ./packages
+COPY apps/api ./apps/api
+COPY apps/web ./apps/web
 
 # Install pnpm and dependencies
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
@@ -20,8 +25,13 @@ WORKDIR /app
 # Install pnpm
 RUN npm install -g pnpm
 
-# Copy root level files
-COPY ../.. ./
+# Copy package files
+COPY package.json pnpm-lock.yaml ./
+
+# Copy packages and apps
+COPY packages ./packages
+COPY apps/api ./apps/api
+COPY apps/web ./apps/web
 
 # Install only production dependencies
 RUN pnpm install --frozen-lockfile --prod
