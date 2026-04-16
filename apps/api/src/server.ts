@@ -633,21 +633,36 @@ const start = async (): Promise<void> => {
     const certPath = "/home/ubuntu/Grocio/apps/api/certs/cert.pem";
     const keyPath = "/home/ubuntu/Grocio/apps/api/certs/key.pem";
 
+    console.log("🔍 Checking certificates...");
+    console.log("📄 Cert path:", certPath, "exists:", fs.existsSync(certPath));
+    console.log("📄 Key path:", keyPath, "exists:", fs.existsSync(keyPath));
+
     const port = process.env.PORT || 3001;
     let server;
 
     if (fs.existsSync(certPath) && fs.existsSync(keyPath)) {
-      // Use HTTPS if certificates exist
-      const httpsOptions = {
-        cert: fs.readFileSync(certPath),
-        key: fs.readFileSync(keyPath),
-      };
-      server = https.createServer(httpsOptions, app);
-      server.listen(port, () => {
-        console.log("✅ Express server listening on port", port, "(HTTPS)");
-        console.log("\n🚀 API: https://localhost:" + port);
-        console.log("📊 Health check: https://localhost:" + port + "/api/v1/health\n");
-      });
+      try {
+        console.log("🔐 Loading SSL certificates...");
+        // Use HTTPS if certificates exist
+        const httpsOptions = {
+          cert: fs.readFileSync(certPath),
+          key: fs.readFileSync(keyPath),
+        };
+        server = https.createServer(httpsOptions, app);
+        server.listen(port, () => {
+          console.log("✅ Express server listening on port", port, "(HTTPS)");
+          console.log("\n🚀 API: https://localhost:" + port);
+          console.log("📊 Health check: https://localhost:" + port + "/api/v1/health\n");
+        });
+      } catch (err) {
+        console.error("❌ Error loading certificates:", err);
+        // Fallback to HTTP
+        server = app.listen(port, () => {
+          console.log("✅ Express server listening on port", port, "(HTTP - certificate error)");
+          console.log("\n🚀 API: http://localhost:" + port);
+          console.log("📊 Health check: http://localhost:" + port + "/api/v1/health\n");
+        });
+      }
     } else {
       // Fallback to HTTP if certificates don't exist
       server = app.listen(port, () => {
