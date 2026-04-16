@@ -671,7 +671,6 @@ const start = async (): Promise<void> => {
         console.log("📊 Health check: http://localhost:" + port + "/api/v1/health\n");
       });
     }
-    });
   } catch (error) {
     console.error("❌ ERROR during startup:", error);
     process.exit(1);
