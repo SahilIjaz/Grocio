@@ -3,6 +3,10 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: false,
   output: "standalone",
+  webpack: (config) => {
+    config.optimization.minimize = false;
+    return config;
+  },
   images: {
     remotePatterns: [
       {

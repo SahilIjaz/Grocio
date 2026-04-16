@@ -408,7 +408,7 @@ export default function AdminPage() {
                               </span>
                             </td>
                             <td style={{ padding: "var(--spacing-4)", fontSize: "0.9rem", color: "var(--gray-600)" }}>
-                              {new Date(u.createdAt).toLocaleDateString()}
+                              -
                             </td>
                             <td style={{ padding: "var(--spacing-4)", textAlign: "center" }}>
                               <button
