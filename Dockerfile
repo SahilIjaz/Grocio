@@ -38,7 +38,7 @@ COPY --from=builder /app/apps/api/dist ./apps/api/dist
 RUN CI=true pnpm install --frozen-lockfile --prod --ignore-scripts
 
 # Rebuild native modules (bcrypt, etc.) - this compiles C++ bindings
-RUN pnpm rebuild
+RUN pnpm rebuild --ignore-scripts
 
 # Expose port
 EXPOSE 3001
