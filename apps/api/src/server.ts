@@ -11,7 +11,7 @@ app.use(helmet());
 app.use(cors({ origin: "*" }));
 app.use(express.json({ limit: "50mb" }));
 
-app.get("/api/v1/health", (req, res) => res.json({ status: "ok" }));
+app.get("/api/v1/health", (req, res) => res.json({ status: "ok", timestamp: new Date().toISOString() }));
 
 app.get("/api/v1/users", async (req, res) => {
   try {
