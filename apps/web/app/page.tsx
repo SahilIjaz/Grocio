@@ -49,20 +49,20 @@ export default function Home() {
     <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
       {/* Header */}
       <header>
-        <div className="container">
+        <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
           <div className="logo">
             <span>🛒</span>
             <span>Grocio</span>
           </div>
-          <div className="nav" style={{ gap: "var(--spacing-6)" }}>
+          <div className="nav" style={{ gap: "var(--spacing-6)", justifyContent: "flex-end", flexWrap: "wrap" }}>
             <a href="#stores" style={{ color: "var(--gray-600)", fontWeight: 600 }}>Stores</a>
             <a href="#features" style={{ color: "var(--gray-600)", fontWeight: 600 }}>Features</a>
             <a href="#accounts" style={{ color: "var(--gray-600)", fontWeight: 600 }}>Demo</a>
             <Link href="/auth/login">
-              <button className="btn-secondary">Login</button>
+              <button className="btn-secondary" style={{ minWidth: "80px" }}>Login</button>
             </Link>
             <Link href="/auth/signup">
-              <button className="btn-primary">Sign Up</button>
+              <button className="btn-primary" style={{ minWidth: "80px" }}>Sign Up</button>
             </Link>
           </div>
         </div>
@@ -78,12 +78,12 @@ export default function Home() {
       >
         <div className="container">
           <div style={{ maxWidth: "800px", margin: "0 auto" }}>
-            <h1 style={{ fontSize: "3.5rem", marginBottom: "var(--spacing-4)", lineHeight: 1.2 }}>
+            <h1 style={{ fontSize: "clamp(1.75rem, 8vw, 3.5rem)", marginBottom: "var(--spacing-4)", lineHeight: 1.2 }}>
               Fresh Groceries Delivered to Your Door
             </h1>
             <p
               style={{
-                fontSize: "1.25rem",
+                fontSize: "clamp(1rem, 4vw, 1.25rem)",
                 color: "var(--gray-600)",
                 marginBottom: "var(--spacing-8)",
                 lineHeight: 1.6,
@@ -94,13 +94,13 @@ export default function Home() {
             </p>
             <div style={{ display: "flex", gap: "var(--spacing-4)", justifyContent: "center", flexWrap: "wrap" }}>
               <Link href="#stores">
-                <button className="btn-primary" style={{ padding: "var(--spacing-4) var(--spacing-8)", fontSize: "1.1rem" }}>
+                <button className="btn-primary" style={{ padding: "var(--spacing-3) var(--spacing-6)", fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)" }}>
                   Explore Stores →
                 </button>
               </Link>
               <button
                 className="btn-ghost"
-                style={{ padding: "var(--spacing-4) var(--spacing-8)", fontSize: "1.1rem" }}
+                style={{ padding: "var(--spacing-3) var(--spacing-6)", fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)" }}
                 onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
               >
                 Learn More
@@ -114,7 +114,7 @@ export default function Home() {
       <section id="features" style={{ padding: "var(--spacing-16) var(--spacing-8)" }}>
         <div className="container">
           <h2 style={{ textAlign: "center", marginBottom: "var(--spacing-12)" }}>Why Choose Grocio?</h2>
-          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))" }}>
+          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(clamp(280px, 100%, 300px), 1fr))" }}>
             {[
               {
                 icon: "🚚",
@@ -148,7 +148,7 @@ export default function Home() {
               },
             ].map((feature, idx) => (
               <div key={idx} className="card">
-                <div style={{ fontSize: "3rem", marginBottom: "var(--spacing-4)" }}>{feature.icon}</div>
+                <div style={{ fontSize: "clamp(2rem, 8vw, 3rem)", marginBottom: "var(--spacing-4)" }}>{feature.icon}</div>
                 <h4 style={{ marginBottom: "var(--spacing-2)" }}>{feature.title}</h4>
                 <p>{feature.description}</p>
               </div>
@@ -182,18 +182,18 @@ export default function Home() {
               <p className="empty-state-text">Check back soon for more stores!</p>
             </div>
           ) : (
-            <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))" }}>
+            <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(clamp(280px, 100%, 350px), 1fr))" }}>
               {tenants.map((tenant) => (
                 <div key={tenant.id} className="card" style={{ overflow: "hidden" }}>
                   <div
                     style={{
                       width: "100%",
-                      height: "200px",
+                      height: "clamp(150px, 40vw, 200px)",
                       background: tenant.logoUrl ? "none" : "linear-gradient(135deg, var(--primary-light) 0%, #e0f2fe 100%)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      fontSize: "4rem",
+                      fontSize: "clamp(2rem, 8vw, 4rem)",
                       marginBottom: "var(--spacing-6)",
                       overflow: "hidden",
                     }}
@@ -245,7 +245,7 @@ export default function Home() {
       <section id="accounts" style={{ padding: "var(--spacing-16) var(--spacing-8)" }}>
         <div className="container" style={{ maxWidth: "900px" }}>
           <h2 style={{ textAlign: "center", marginBottom: "var(--spacing-12)" }}>Demo Accounts for Testing</h2>
-          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(clamp(280px, 100%, 280px), 1fr))" }}>
             {[
               {
                 title: "Admin Account",
@@ -277,7 +277,7 @@ export default function Home() {
                   position: "relative",
                 }}
               >
-                <div style={{ fontSize: "3rem", marginBottom: "var(--spacing-4)" }}>{account.icon}</div>
+                <div style={{ fontSize: "clamp(2rem, 8vw, 3rem)", marginBottom: "var(--spacing-4)" }}>{account.icon}</div>
                 <h4 style={{ marginBottom: "var(--spacing-4)", color: "var(--gray-900)" }}>{account.title}</h4>
                 <div style={{ background: "var(--gray-50)", padding: "var(--spacing-4)", borderRadius: "var(--radius-base)", marginBottom: "var(--spacing-3)" }}>
                   <p style={{ fontSize: "0.85rem", color: "var(--gray-600)", marginBottom: "var(--spacing-1)" }}>
@@ -350,7 +350,7 @@ export default function Home() {
       {/* Footer */}
       <footer>
         <div className="container">
-          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}>
+          <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(clamp(250px, 100%, 250px), 1fr))" }}>
             <div>
               <h4 style={{ color: "white", marginBottom: "var(--spacing-4)" }}>About Grocio</h4>
               <p>Your trusted online grocery store delivering fresh products and exceptional service.</p>
