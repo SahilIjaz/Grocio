@@ -19,8 +19,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install pnpm globally and build tools for native modules
-RUN npm install -g pnpm && apk add --no-cache python3 make g++
+# Install pnpm globally, build tools for native modules, and openssl for Prisma
+RUN npm install -g pnpm && apk add --no-cache python3 make g++ openssl
+
+# Set environment to skip prepare scripts
+ENV HUSKY=0
 
 # Copy root package files and workspace structure
 COPY package.json pnpm-lock.yaml ./
@@ -31,11 +34,11 @@ COPY apps/api ./apps/api
 # Copy built dist from builder stage
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
-# Install ONLY production dependencies
-RUN pnpm install --frozen-lockfile --prod
+# Install ONLY production dependencies, skip all scripts (husky, etc.)
+RUN pnpm install --frozen-lockfile --prod --ignore-scripts
 
-# Rebuild native modules (bcrypt, etc.)
-RUN pnpm rebuild
+# Rebuild native modules (bcrypt, etc.) - this compiles C++ bindings
+RUN pnpm rebuild --prod
 
 # Expose port
 EXPOSE 3001
