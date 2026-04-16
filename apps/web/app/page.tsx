@@ -19,21 +19,18 @@ export default function Home() {
 
   useEffect(() => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
-    console.log("🔧 API URL:", apiUrl);
-    console.log("🔧 Fetching from:", `${apiUrl}/api/v1/tenants`);
 
-    fetch(`${apiUrl}/api/v1/tenants`)
-      .then((res) => {
-        console.log("✅ Response status:", res.status);
-        return res.json();
-      })
+    fetch(`${apiUrl}/api/v1/tenants`, {
+      headers: {
+        "Cache-Control": "no-cache",
+      },
+    })
+      .then((res) => res.json())
       .then((data) => {
-        console.log("✅ Data received:", data);
         setTenants(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {
-        console.error("❌ Error fetching tenants:", err);
         setError(err.message);
         setLoading(false);
       });
