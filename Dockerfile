@@ -23,6 +23,9 @@ RUN pnpm prisma generate --schema=./apps/api/prisma/schema.prisma
 # Build API
 RUN pnpm build --filter=@grocio/api
 
+# Copy the generated Prisma client to where it's needed at runtime
+RUN cp -r node_modules/.prisma apps/api/node_modules/ 2>/dev/null || true
+
 # Expose and run
 EXPOSE 3001
 
