@@ -630,8 +630,8 @@ const start = async (): Promise<void> => {
     console.log("\n🔴 Starting Express server...");
 
     // Try to load SSL certificates for HTTPS
-    const certPath = path.join(process.cwd(), "certs", "cert.pem");
-    const keyPath = path.join(process.cwd(), "certs", "key.pem");
+    const certPath = "/home/ubuntu/Grocio/apps/api/certs/cert.pem";
+    const keyPath = "/home/ubuntu/Grocio/apps/api/certs/key.pem";
 
     const port = process.env.PORT || 3001;
     let server;
