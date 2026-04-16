@@ -34,8 +34,11 @@ COPY apps/api ./apps/api
 # Copy built dist from builder stage
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
-# Install ONLY production dependencies (allow prepare script to fail, we only need postinstall)
-RUN CI=true pnpm install --frozen-lockfile --prod 2>&1 || true
+# Remove prepare script from package.json to avoid husky error, but keep everything else
+RUN sed -i '/"prepare":/d' package.json
+
+# Install ONLY production dependencies
+RUN CI=true pnpm install --frozen-lockfile --prod
 
 # Expose port
 EXPOSE 3001
