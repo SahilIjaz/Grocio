@@ -8,6 +8,7 @@
   "prisma": {
     "seed": "node --input-type=module prisma/seed.ts"
   },
+  
   "scripts": {
     "dev": "tsc --watch --preserveWatchOutput &  sleep 1 && node --enable-source-maps dist/server.js",
     "build": "tsc",
