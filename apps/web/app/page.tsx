@@ -19,26 +19,26 @@ export default function Home() {
 
   useEffect(() => {
     const apiUrl = "http://ec2-13-53-205-180.eu-north-1.compute.amazonaws.com:3001";
+    console.log("Fetching stores from:", `${apiUrl}/api/v1/tenants`);
 
     fetch(`${apiUrl}/api/v1/tenants`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "Cache-Control": "no-cache, no-store, must-revalidate",
-        "Pragma": "no-cache",
-        "Expires": "0",
       },
-      cache: "no-store",
     })
       .then((res) => {
+        console.log("Response received:", res.status);
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         return res.json();
       })
       .then((data) => {
+        console.log("Stores loaded:", data);
         setTenants(Array.isArray(data) ? data : []);
         setLoading(false);
       })
       .catch((err) => {
+        console.error("Error fetching stores:", err);
         setError(err instanceof Error ? err.message : "Failed to load stores");
         setLoading(false);
       });
