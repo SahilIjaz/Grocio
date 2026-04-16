@@ -3,8 +3,5 @@
   "buildCommand": "pnpm build --filter=@grocio/web",
   "outputDirectory": "apps/web/.next",
   "installCommand": "pnpm install --frozen-lockfile",
-  "framework": "nextjs",
-  "env": {
-    "NEXT_PUBLIC_API_URL": "@next-public-api-url"
-  }
+  "framework": "nextjs"
 }
