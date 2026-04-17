@@ -180,6 +180,7 @@ export default function StorePage() {
   const [cart, setCart] = useState<Record<string, number>>({});
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"name" | "price-low" | "price-high">("name");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
