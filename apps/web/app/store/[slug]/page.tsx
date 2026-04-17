@@ -330,37 +330,37 @@ export default function StorePage() {
                   {/* Toolbar */}
                   <div style={{
                     marginBottom: "var(--spacing-8)",
-                    padding: "var(--spacing-4)",
+                    padding: "var(--spacing-3) var(--spacing-4)",
                     backgroundColor: "white",
                     borderRadius: "var(--radius-lg)",
                     boxShadow: "var(--shadow-sm)",
                     display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
+                    flexDirection: "column",
+                    gap: "var(--spacing-3)",
+                    alignItems: "flex-start",
                   }}>
-                    <p style={{ color: "var(--gray-600)", fontSize: "0.95rem", margin: 0 }}>
+                    <p style={{ color: "var(--gray-600)", fontSize: "clamp(0.85rem, 2vw, 0.95rem)", margin: 0 }}>
                       Showing <strong>{filteredProducts.length}</strong> products
                     </p>
-                    <div style={{ display: "flex", gap: "var(--spacing-4)", alignItems: "center" }}>
-                      <div style={{ display: "flex", gap: "var(--spacing-2)", alignItems: "center" }}>
-                        <label style={{ fontSize: "0.9rem", fontWeight: "500", color: "var(--gray-700)" }}>Sort:</label>
-                        <select
-                          value={sortBy}
-                          onChange={(e) => setSortBy(e.target.value as "name" | "price-low" | "price-high")}
-                          style={{
-                            padding: "var(--spacing-2) var(--spacing-3)",
-                            borderRadius: "var(--radius-md)",
-                            border: "2px solid var(--gray-200)",
-                            fontSize: "0.9rem",
-                            cursor: "pointer",
-                            backgroundColor: "white",
-                          }}
-                        >
-                          <option value="name">Name (A-Z)</option>
-                          <option value="price-low">Price: Low to High</option>
-                          <option value="price-high">Price: High to Low</option>
-                        </select>
-                      </div>
+                    <div style={{ display: "flex", gap: "var(--spacing-2)", alignItems: "center", width: "100%" }}>
+                      <label style={{ fontSize: "clamp(0.8rem, 2vw, 0.9rem)", fontWeight: "500", color: "var(--gray-700)", whiteSpace: "nowrap" }}>Sort:</label>
+                      <select
+                        value={sortBy}
+                        onChange={(e) => setSortBy(e.target.value as "name" | "price-low" | "price-high")}
+                        style={{
+                          flex: 1,
+                          padding: "var(--spacing-2) var(--spacing-3)",
+                          borderRadius: "var(--radius-md)",
+                          border: "2px solid var(--gray-200)",
+                          fontSize: "clamp(0.8rem, 2vw, 0.9rem)",
+                          cursor: "pointer",
+                          backgroundColor: "white",
+                        }}
+                      >
+                        <option value="name">Name (A-Z)</option>
+                        <option value="price-low">Price: Low to High</option>
+                        <option value="price-high">Price: High to Low</option>
+                      </select>
                     </div>
                   </div>
 
