@@ -199,9 +199,28 @@ export default function Home() {
 
   return (
     <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
+      {/* Mobile Menu */}
+      <MobileNav isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
+
       {/* Header */}
       <header>
         <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" }}>
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              display: "none",
+              background: "none",
+              border: "none",
+              fontSize: "1.5rem",
+              cursor: "pointer",
+              color: "var(--gray-700)",
+            }}
+            className="mobile-menu-toggle"
+          >
+            ☰
+          </button>
+
           <div className="logo">
             <span>🛒</span>
             <span>Grocio</span>
