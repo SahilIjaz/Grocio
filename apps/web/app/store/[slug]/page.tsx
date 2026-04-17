@@ -164,9 +164,9 @@ export default function StorePage() {
     <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
       {/* Header */}
       <header style={{ position: "sticky", top: 0, zIndex: 100, backgroundColor: "white", boxShadow: "var(--shadow-md)" }}>
-        <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "var(--spacing-4) 0" }}>
+        <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "var(--spacing-3) var(--spacing-4)", gap: "var(--spacing-4)", flexWrap: "wrap" }}>
           <Link href="/">
-            <div className="logo" style={{ cursor: "pointer" }}>
+            <div className="logo" style={{ cursor: "pointer", minWidth: "fit-content" }}>
               <span>🛒</span>
               <span>Grocio</span>
             </div>
@@ -177,7 +177,9 @@ export default function StorePage() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{
-              width: "400px",
+              flex: "1 1 200px",
+              minWidth: "150px",
+              maxWidth: "400px",
               padding: "var(--spacing-3) var(--spacing-4)",
               borderRadius: "var(--radius-lg)",
               border: "2px solid var(--gray-200)",
@@ -185,7 +187,7 @@ export default function StorePage() {
             }}
           />
           <Link href={`/cart?slug=${slug}`}>
-            <button style={{ position: "relative" }} className="btn-primary">
+            <button style={{ position: "relative", minWidth: "100px" }} className="btn-primary">
               <span>🛒 Cart</span>
               {cartItemCount > 0 && (
                 <div
