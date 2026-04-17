@@ -929,11 +929,13 @@ footer a:hover {
     height: 44px;
     padding: 0;
     flex-shrink: 0;
+    order: -1;
   }
 
   .logo {
     font-size: 1.2rem;
-    flex: 0 0 auto;
+    flex: 1 1 auto;
+    text-align: center;
   }
 
   .logo span:last-child {
@@ -943,6 +945,11 @@ footer a:hover {
   /* Hide search and cart button on mobile, show hamburger */
   header input,
   header .btn-primary {
+    display: none !important;
+  }
+
+  /* Hide nav items on mobile */
+  .nav {
     display: none !important;
   }
 
