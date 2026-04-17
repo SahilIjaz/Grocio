@@ -1175,12 +1175,22 @@ footer a:hover {
     padding: 0 var(--spacing-6);
   }
 
+  header .container {
+    padding: var(--spacing-4) var(--spacing-6);
+    gap: var(--spacing-4);
+  }
+
+  header input {
+    min-width: 250px;
+  }
+
   section {
     padding: var(--spacing-12) var(--spacing-6) !important;
   }
 
   .grid {
     gap: var(--spacing-6);
+    grid-template-columns: 250px 1fr !important;
   }
 
   .grid-cols-4, .grid-cols-3 {
@@ -1192,12 +1202,14 @@ footer a:hover {
   }
 
   .sidebar {
-    position: static;
-    margin-bottom: var(--spacing-6);
+    position: sticky;
+    top: 180px;
+    margin-bottom: 0;
   }
 
   .order-summary {
-    position: static;
+    position: sticky;
+    top: 180px;
   }
 
   .product-card {
