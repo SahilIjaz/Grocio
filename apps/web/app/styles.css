@@ -916,7 +916,19 @@ footer a:hover {
   header .container {
     padding: var(--spacing-2) var(--spacing-3);
     gap: var(--spacing-2);
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    justify-content: space-between;
+  }
+
+  /* Mobile Menu Toggle */
+  .mobile-menu-toggle {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    flex-shrink: 0;
   }
 
   .logo {
@@ -926,6 +938,12 @@ footer a:hover {
 
   .logo span:last-child {
     display: none;
+  }
+
+  /* Hide search and cart button on mobile, show hamburger */
+  header input,
+  header .btn-primary {
+    display: none !important;
   }
 
   .nav {
