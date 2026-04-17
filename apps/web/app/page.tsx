@@ -30,7 +30,7 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
           top: 0,
           left: 0,
           bottom: 0,
-          width: "280px",
+          width: "clamp(240px, 80vw, 320px)",
           backgroundColor: "white",
           zIndex: 50,
           transform: isOpen ? "translateX(0)" : "translateX(-100%)",
@@ -41,15 +41,15 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
           flexDirection: "column",
         }}
       >
-        <div style={{ padding: "var(--spacing-6)", borderBottom: "1px solid var(--gray-200)" }}>
+        <div style={{ padding: "clamp(var(--spacing-4), 4vw, var(--spacing-6))", borderBottom: "1px solid var(--gray-200)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2 style={{ margin: 0, fontSize: "1.25rem", color: "var(--primary)" }}>Grocio</h2>
+            <h2 style={{ margin: 0, fontSize: "clamp(1rem, 4vw, 1.25rem)", color: "var(--primary)" }}>Grocio</h2>
             <button
               onClick={onClose}
               style={{
                 background: "none",
                 border: "none",
-                fontSize: "1.5rem",
+                fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
                 cursor: "pointer",
                 color: "var(--gray-600)",
               }}
@@ -59,20 +59,27 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
           </div>
         </div>
 
-        <nav style={{ padding: "var(--spacing-4)", flex: 1 }}>
+        <nav style={{ padding: "clamp(var(--spacing-3), 3vw, var(--spacing-4))", flex: 1, display: "flex", flexDirection: "column", gap: "clamp(var(--spacing-1), 1.5vw, var(--spacing-2))" }}>
           <a
             href="#stores"
             onClick={onClose}
             style={{
               display: "block",
-              padding: "var(--spacing-4)",
-              marginBottom: "var(--spacing-2)",
+              padding: "clamp(var(--spacing-3), 3vw, var(--spacing-4))",
               color: "var(--gray-900)",
               fontWeight: "500",
               cursor: "pointer",
               borderRadius: "var(--radius-md)",
               backgroundColor: "var(--gray-50)",
               textDecoration: "none",
+              fontSize: "clamp(0.85rem, 2.5vw, 1rem)",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--primary-light)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--gray-50)";
             }}
           >
             Stores
@@ -82,14 +89,21 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
             onClick={onClose}
             style={{
               display: "block",
-              padding: "var(--spacing-4)",
-              marginBottom: "var(--spacing-2)",
+              padding: "clamp(var(--spacing-3), 3vw, var(--spacing-4))",
               color: "var(--gray-900)",
               fontWeight: "500",
               cursor: "pointer",
               borderRadius: "var(--radius-md)",
               backgroundColor: "var(--gray-50)",
               textDecoration: "none",
+              fontSize: "clamp(0.85rem, 2.5vw, 1rem)",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--primary-light)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--gray-50)";
             }}
           >
             Features
@@ -99,33 +113,48 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
             onClick={onClose}
             style={{
               display: "block",
-              padding: "var(--spacing-4)",
-              marginBottom: "var(--spacing-2)",
+              padding: "clamp(var(--spacing-3), 3vw, var(--spacing-4))",
               color: "var(--gray-900)",
               fontWeight: "500",
               cursor: "pointer",
               borderRadius: "var(--radius-md)",
               backgroundColor: "var(--gray-50)",
               textDecoration: "none",
+              fontSize: "clamp(0.85rem, 2.5vw, 1rem)",
+              transition: "all 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--primary-light)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = "var(--gray-50)";
             }}
           >
             Demo Accounts
           </a>
         </nav>
 
-        <div style={{ padding: "var(--spacing-4)", borderTop: "1px solid var(--gray-200)", display: "flex", flexDirection: "column", gap: "var(--spacing-3)" }}>
+        <div style={{ padding: "clamp(var(--spacing-3), 3vw, var(--spacing-4))", borderTop: "1px solid var(--gray-200)", display: "flex", flexDirection: "column", gap: "clamp(var(--spacing-2), 1.5vw, var(--spacing-3))" }}>
           <Link href="/auth/login" style={{ width: "100%", textDecoration: "none" }}>
             <button
               onClick={onClose}
               style={{
                 width: "100%",
-                padding: "var(--spacing-3)",
+                padding: "clamp(var(--spacing-2), 2.5vw, var(--spacing-3))",
                 backgroundColor: "var(--gray-100)",
                 color: "var(--gray-900)",
                 border: "2px solid var(--gray-300)",
                 borderRadius: "var(--radius-base)",
                 fontWeight: "600",
                 cursor: "pointer",
+                fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--gray-200)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--gray-100)";
               }}
             >
               Login
@@ -136,13 +165,21 @@ function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }
               onClick={onClose}
               style={{
                 width: "100%",
-                padding: "var(--spacing-3)",
+                padding: "clamp(var(--spacing-2), 2.5vw, var(--spacing-3))",
                 backgroundColor: "var(--primary)",
                 color: "white",
                 border: "none",
                 borderRadius: "var(--radius-base)",
                 fontWeight: "600",
                 cursor: "pointer",
+                fontSize: "clamp(0.8rem, 2.5vw, 1rem)",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--primary-dark)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--primary)";
               }}
             >
               Sign Up
