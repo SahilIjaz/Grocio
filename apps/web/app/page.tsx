@@ -3,6 +3,157 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 
+// Mobile Menu Component
+function MobileNav({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+  return (
+    <>
+      {/* Overlay */}
+      {isOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            zIndex: 40,
+          }}
+          onClick={onClose}
+        />
+      )}
+
+      {/* Menu */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: "280px",
+          backgroundColor: "white",
+          zIndex: 50,
+          transform: isOpen ? "translateX(0)" : "translateX(-100%)",
+          transition: "transform 0.3s ease-out",
+          boxShadow: isOpen ? "var(--shadow-lg)" : "none",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ padding: "var(--spacing-6)", borderBottom: "1px solid var(--gray-200)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h2 style={{ margin: 0, fontSize: "1.25rem", color: "var(--primary)" }}>Grocio</h2>
+            <button
+              onClick={onClose}
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "1.5rem",
+                cursor: "pointer",
+                color: "var(--gray-600)",
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <nav style={{ padding: "var(--spacing-4)", flex: 1 }}>
+          <a
+            href="#stores"
+            onClick={onClose}
+            style={{
+              display: "block",
+              padding: "var(--spacing-4)",
+              marginBottom: "var(--spacing-2)",
+              color: "var(--gray-900)",
+              fontWeight: "500",
+              cursor: "pointer",
+              borderRadius: "var(--radius-md)",
+              backgroundColor: "var(--gray-50)",
+              textDecoration: "none",
+            }}
+          >
+            Stores
+          </a>
+          <a
+            href="#features"
+            onClick={onClose}
+            style={{
+              display: "block",
+              padding: "var(--spacing-4)",
+              marginBottom: "var(--spacing-2)",
+              color: "var(--gray-900)",
+              fontWeight: "500",
+              cursor: "pointer",
+              borderRadius: "var(--radius-md)",
+              backgroundColor: "var(--gray-50)",
+              textDecoration: "none",
+            }}
+          >
+            Features
+          </a>
+          <a
+            href="#accounts"
+            onClick={onClose}
+            style={{
+              display: "block",
+              padding: "var(--spacing-4)",
+              marginBottom: "var(--spacing-2)",
+              color: "var(--gray-900)",
+              fontWeight: "500",
+              cursor: "pointer",
+              borderRadius: "var(--radius-md)",
+              backgroundColor: "var(--gray-50)",
+              textDecoration: "none",
+            }}
+          >
+            Demo Accounts
+          </a>
+        </nav>
+
+        <div style={{ padding: "var(--spacing-4)", borderTop: "1px solid var(--gray-200)", display: "flex", flexDirection: "column", gap: "var(--spacing-3)" }}>
+          <Link href="/auth/login" style={{ width: "100%", textDecoration: "none" }}>
+            <button
+              onClick={onClose}
+              style={{
+                width: "100%",
+                padding: "var(--spacing-3)",
+                backgroundColor: "var(--gray-100)",
+                color: "var(--gray-900)",
+                border: "2px solid var(--gray-300)",
+                borderRadius: "var(--radius-base)",
+                fontWeight: "600",
+                cursor: "pointer",
+              }}
+            >
+              Login
+            </button>
+          </Link>
+          <Link href="/auth/signup" style={{ width: "100%", textDecoration: "none" }}>
+            <button
+              onClick={onClose}
+              style={{
+                width: "100%",
+                padding: "var(--spacing-3)",
+                backgroundColor: "var(--primary)",
+                color: "white",
+                border: "none",
+                borderRadius: "var(--radius-base)",
+                fontWeight: "600",
+                cursor: "pointer",
+              }}
+            >
+              Sign Up
+            </button>
+          </Link>
+        </div>
+      </div>
+    </>
+  );
+}
+
 interface Tenant {
   id: string;
   name: string;
