@@ -32,7 +32,7 @@ function MobileMenu({ isOpen, onClose, slug, cartItemCount }: { isOpen: boolean;
           top: 0,
           left: 0,
           bottom: 0,
-          width: "280px",
+          width: "clamp(240px, 80vw, 320px)",
           backgroundColor: "white",
           zIndex: 50,
           transform: isOpen ? "translateX(0)" : "translateX(-100%)",
@@ -43,15 +43,15 @@ function MobileMenu({ isOpen, onClose, slug, cartItemCount }: { isOpen: boolean;
           flexDirection: "column",
         }}
       >
-        <div style={{ padding: "var(--spacing-6)", borderBottom: "1px solid var(--gray-200)" }}>
+        <div style={{ padding: "clamp(var(--spacing-4), 4vw, var(--spacing-6))", borderBottom: "1px solid var(--gray-200)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2 style={{ margin: 0, fontSize: "1.25rem", color: "var(--primary)" }}>Menu</h2>
+            <h2 style={{ margin: 0, fontSize: "clamp(1rem, 4vw, 1.25rem)", color: "var(--primary)" }}>Menu</h2>
             <button
               onClick={onClose}
               style={{
                 background: "none",
                 border: "none",
-                fontSize: "1.5rem",
+                fontSize: "clamp(1.2rem, 4vw, 1.5rem)",
                 cursor: "pointer",
                 color: "var(--gray-600)",
               }}
@@ -61,19 +61,18 @@ function MobileMenu({ isOpen, onClose, slug, cartItemCount }: { isOpen: boolean;
           </div>
         </div>
 
-        <nav style={{ padding: "var(--spacing-4)", flex: 1 }}>
+        <nav style={{ padding: "clamp(var(--spacing-3), 3vw, var(--spacing-4))", flex: 1, display: "flex", flexDirection: "column", gap: "clamp(var(--spacing-2), 2vw, var(--spacing-3))" }}>
           <Link href="/" style={{ textDecoration: "none" }}>
             <button
               onClick={onClose}
               style={{
                 width: "100%",
-                padding: "var(--spacing-4)",
-                marginBottom: "var(--spacing-3)",
+                padding: "clamp(var(--spacing-3), 3vw, var(--spacing-4))",
                 backgroundColor: "var(--gray-50)",
                 border: "none",
                 borderRadius: "var(--radius-md)",
                 cursor: "pointer",
-                fontSize: "1rem",
+                fontSize: "clamp(0.85rem, 2.5vw, 1rem)",
                 fontWeight: "500",
                 color: "var(--gray-900)",
                 transition: "all 0.2s",
@@ -94,14 +93,13 @@ function MobileMenu({ isOpen, onClose, slug, cartItemCount }: { isOpen: boolean;
               onClick={onClose}
               style={{
                 width: "100%",
-                padding: "var(--spacing-4)",
-                marginBottom: "var(--spacing-3)",
+                padding: "clamp(var(--spacing-3), 3vw, var(--spacing-4))",
                 backgroundColor: "var(--primary)",
                 color: "white",
                 border: "none",
                 borderRadius: "var(--radius-md)",
                 cursor: "pointer",
-                fontSize: "1rem",
+                fontSize: "clamp(0.85rem, 2.5vw, 1rem)",
                 fontWeight: "600",
                 display: "flex",
                 justifyContent: "space-between",
@@ -122,13 +120,14 @@ function MobileMenu({ isOpen, onClose, slug, cartItemCount }: { isOpen: boolean;
                     backgroundColor: "var(--danger)",
                     color: "white",
                     borderRadius: "50%",
-                    width: "24px",
-                    height: "24px",
+                    width: "clamp(20px, 5vw, 24px)",
+                    height: "clamp(20px, 5vw, 24px)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "0.75rem",
+                    fontSize: "clamp(0.65rem, 1.5vw, 0.75rem)",
                     fontWeight: "bold",
+                    flexShrink: 0,
                   }}
                 >
                   {cartItemCount}
@@ -138,8 +137,8 @@ function MobileMenu({ isOpen, onClose, slug, cartItemCount }: { isOpen: boolean;
           </Link>
         </nav>
 
-        <div style={{ padding: "var(--spacing-4)", borderTop: "1px solid var(--gray-200)" }}>
-          <p style={{ fontSize: "0.85rem", color: "var(--gray-600)", margin: 0 }}>
+        <div style={{ padding: "clamp(var(--spacing-3), 3vw, var(--spacing-4))", borderTop: "1px solid var(--gray-200)" }}>
+          <p style={{ fontSize: "clamp(0.75rem, 2vw, 0.85rem)", color: "var(--gray-600)", margin: 0 }}>
             🎉 Free delivery on orders over $50
           </p>
         </div>
