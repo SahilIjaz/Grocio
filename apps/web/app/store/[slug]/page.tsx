@@ -365,7 +365,7 @@ export default function StorePage() {
                   </div>
 
                   {/* Product Grid */}
-                  <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: "var(--spacing-6)" }}>
+                  <div className="grid" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(clamp(200px, 100%, 280px), 1fr))", gap: "clamp(var(--spacing-4), 3vw, var(--spacing-6))" }}>
                     {filteredProducts.map((product) => {
                       const imageUrl = getImageUrl(product);
                       const inCart = cart[product.id] || 0;
