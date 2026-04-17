@@ -1142,17 +1142,26 @@ footer a:hover {
     flex-wrap: wrap;
   }
 
+  /* Show hamburger menu */
+  .mobile-menu-toggle {
+    display: flex !important;
+    order: -1;
+  }
+
   header input {
-    min-width: 180px;
+    display: none !important;
+  }
+
+  header .btn-primary {
+    display: none !important;
   }
 
   .nav {
-    flex-wrap: wrap;
-    gap: var(--spacing-3);
+    display: none !important;
   }
 
-  .nav a, .nav button {
-    font-size: 0.9rem;
+  .logo span:last-child {
+    display: none;
   }
 
   section {
