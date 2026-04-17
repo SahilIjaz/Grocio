@@ -4,6 +4,150 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 
+// Mobile Menu Component
+function MobileMenu({ isOpen, onClose, slug, cartItemCount }: { isOpen: boolean; onClose: () => void; slug: string; cartItemCount: number }) {
+  return (
+    <>
+      {/* Overlay */}
+      {isOpen && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            zIndex: 40,
+            animation: "fadeIn 0.2s ease-out",
+          }}
+          onClick={onClose}
+        />
+      )}
+
+      {/* Menu */}
+      <div
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          bottom: 0,
+          width: "280px",
+          backgroundColor: "white",
+          zIndex: 50,
+          transform: isOpen ? "translateX(0)" : "translateX(-100%)",
+          transition: "transform 0.3s ease-out",
+          boxShadow: isOpen ? "var(--shadow-lg)" : "none",
+          overflowY: "auto",
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <div style={{ padding: "var(--spacing-6)", borderBottom: "1px solid var(--gray-200)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <h2 style={{ margin: 0, fontSize: "1.25rem", color: "var(--primary)" }}>Menu</h2>
+            <button
+              onClick={onClose}
+              style={{
+                background: "none",
+                border: "none",
+                fontSize: "1.5rem",
+                cursor: "pointer",
+                color: "var(--gray-600)",
+              }}
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <nav style={{ padding: "var(--spacing-4)", flex: 1 }}>
+          <Link href="/" style={{ textDecoration: "none" }}>
+            <button
+              onClick={onClose}
+              style={{
+                width: "100%",
+                padding: "var(--spacing-4)",
+                marginBottom: "var(--spacing-3)",
+                backgroundColor: "var(--gray-50)",
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                cursor: "pointer",
+                fontSize: "1rem",
+                fontWeight: "500",
+                color: "var(--gray-900)",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--primary-light)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--gray-50)";
+              }}
+            >
+              ← Back to Stores
+            </button>
+          </Link>
+
+          <Link href={`/cart?slug=${slug}`} style={{ textDecoration: "none" }}>
+            <button
+              onClick={onClose}
+              style={{
+                width: "100%",
+                padding: "var(--spacing-4)",
+                marginBottom: "var(--spacing-3)",
+                backgroundColor: "var(--primary)",
+                color: "white",
+                border: "none",
+                borderRadius: "var(--radius-md)",
+                cursor: "pointer",
+                fontSize: "1rem",
+                fontWeight: "600",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--primary-dark)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = "var(--primary)";
+              }}
+            >
+              <span>🛒 Cart</span>
+              {cartItemCount > 0 && (
+                <span
+                  style={{
+                    backgroundColor: "var(--danger)",
+                    color: "white",
+                    borderRadius: "50%",
+                    width: "24px",
+                    height: "24px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "0.75rem",
+                    fontWeight: "bold",
+                  }}
+                >
+                  {cartItemCount}
+                </span>
+              )}
+            </button>
+          </Link>
+        </nav>
+
+        <div style={{ padding: "var(--spacing-4)", borderTop: "1px solid var(--gray-200)" }}>
+          <p style={{ fontSize: "0.85rem", color: "var(--gray-600)", margin: 0 }}>
+            🎉 Free delivery on orders over $50
+          </p>
+        </div>
+      </div>
+    </>
+  );
+}
+
 export const dynamic = "force-dynamic";
 
 interface Product {
