@@ -588,25 +588,26 @@ export default function StorePage() {
                   {cartItemCount > 0 && (
                     <div style={{
                       marginTop: "var(--spacing-16)",
-                      padding: "var(--spacing-8)",
+                      padding: "var(--spacing-6) var(--spacing-4)",
                       background: "white",
                       borderRadius: "var(--radius-lg)",
                       boxShadow: "var(--shadow-lg)",
                       display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
+                      flexDirection: "column",
+                      gap: "var(--spacing-4)",
+                      alignItems: "flex-start",
                       borderLeft: "4px solid var(--primary)",
                     }}>
                       <div>
-                        <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-2)" }}>
+                        <p style={{ color: "var(--gray-600)", marginBottom: "var(--spacing-2)", fontSize: "clamp(0.9rem, 2vw, 0.95rem)" }}>
                           Items in Cart: <strong>{cartItemCount}</strong>
                         </p>
-                        <h3 style={{ fontSize: "2rem", color: "var(--primary)", margin: 0 }}>
+                        <h3 style={{ fontSize: "clamp(1.5rem, 6vw, 2rem)", color: "var(--primary)", margin: 0 }}>
                           ${cartTotal ? cartTotal.toFixed(2) : "0.00"}
                         </h3>
                       </div>
-                      <Link href={`/cart?slug=${slug}`}>
-                        <button className="btn-primary" style={{ padding: "var(--spacing-4) var(--spacing-8)", fontSize: "1.1rem" }}>
+                      <Link href={`/cart?slug=${slug}`} style={{ width: "100%" }}>
+                        <button className="btn-primary" style={{ padding: "var(--spacing-3) var(--spacing-6)", fontSize: "clamp(0.9rem, 2vw, 1.1rem)", width: "100%" }}>
                           Proceed to Checkout →
                         </button>
                       </Link>
