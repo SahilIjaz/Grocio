@@ -307,9 +307,28 @@ export default function StorePage() {
 
   return (
     <main className="min-h-screen" style={{ background: "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)" }}>
+      {/* Mobile Menu */}
+      <MobileMenu isOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} slug={slug} cartItemCount={cartItemCount} />
+
       {/* Header */}
       <header style={{ position: "sticky", top: 0, zIndex: 100, backgroundColor: "white", boxShadow: "var(--shadow-md)" }}>
         <div className="container" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "var(--spacing-3) var(--spacing-4)", gap: "var(--spacing-4)", flexWrap: "wrap" }}>
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            style={{
+              display: "none",
+              background: "none",
+              border: "none",
+              fontSize: "1.5rem",
+              cursor: "pointer",
+              color: "var(--gray-700)",
+            }}
+            className="mobile-menu-toggle"
+          >
+            ☰
+          </button>
+
           <Link href="/">
             <div className="logo" style={{ cursor: "pointer", minWidth: "fit-content" }}>
               <span>🛒</span>
