@@ -254,9 +254,9 @@ export default function StorePage() {
             <h3 className="empty-state-title">Loading Store</h3>
           </div>
         ) : (
-          <div className="grid" style={{ gridTemplateColumns: "250px 1fr", gap: "var(--spacing-8)", alignItems: "start" }}>
+          <div className="grid" style={{ gridTemplateColumns: "clamp(200px, 25%, 280px) 1fr", gap: "clamp(var(--spacing-4), 5vw, var(--spacing-8))", alignItems: "start" }}>
             {/* Sidebar - Categories */}
-            <div>
+            <div style={{ display: "flex", flexDirection: "column" }}>
               <aside className="sidebar" style={{ position: "sticky", top: "180px" }}>
                 <h3 className="sidebar-title">Categories</h3>
                 <button
