@@ -1087,20 +1087,30 @@ footer a:hover {
 
   header .container {
     padding: var(--spacing-3) var(--spacing-4);
-    gap: var(--spacing-4);
+    gap: var(--spacing-3);
+    flex-wrap: wrap;
+  }
+
+  header input {
+    min-width: 180px;
   }
 
   .nav {
     flex-wrap: wrap;
-    gap: var(--spacing-4);
+    gap: var(--spacing-3);
+  }
+
+  .nav a, .nav button {
+    font-size: 0.9rem;
   }
 
   section {
-    padding: var(--spacing-12) var(--spacing-4) !important;
+    padding: var(--spacing-10) var(--spacing-4) !important;
   }
 
   .grid {
     gap: var(--spacing-6);
+    grid-template-columns: 1fr !important;
   }
 
   .grid-cols-4, .grid-cols-3, .grid-cols-2 {
@@ -1108,7 +1118,7 @@ footer a:hover {
   }
 
   .card {
-    padding: var(--spacing-6);
+    padding: var(--spacing-5);
   }
 
   .product-card {
@@ -1116,11 +1126,16 @@ footer a:hover {
   }
 
   .product-image {
-    height: 200px;
+    height: 180px;
   }
 
   .sidebar {
     position: static;
+    margin-bottom: var(--spacing-4);
+  }
+
+  .sidebar-title {
+    font-size: 1.1rem;
   }
 
   .order-summary {
@@ -1128,12 +1143,21 @@ footer a:hover {
   }
 
   button, .btn {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
   }
 
   .product-actions {
     flex-wrap: wrap;
     gap: var(--spacing-2);
+  }
+
+  /* Header layout on tablet */
+  .logo {
+    flex: 0 0 auto;
+  }
+
+  .logo span:last-child {
+    display: inline;
   }
 }
 
