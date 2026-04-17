@@ -883,30 +883,43 @@ footer a:hover {
     max-width: 100%;
   }
 
+  header {
+    padding: 0;
+  }
+
   header .container {
-    flex-direction: column;
-    padding: var(--spacing-3) var(--spacing-3);
-    gap: var(--spacing-4);
+    padding: var(--spacing-2) var(--spacing-3);
+    gap: var(--spacing-2);
+    flex-wrap: wrap;
   }
 
   .logo {
-    font-size: 1.35rem;
-    margin-bottom: var(--spacing-2);
+    font-size: 1.2rem;
+    flex: 0 0 auto;
+  }
+
+  .logo span:last-child {
+    display: none;
   }
 
   .nav {
-    flex-direction: column;
+    flex-direction: row;
     gap: var(--spacing-2);
     width: 100%;
+    flex-wrap: wrap;
   }
 
   .nav a, .nav button {
-    width: 100%;
+    flex: 1 1 auto;
+    min-width: 50px;
+    white-space: nowrap;
+    font-size: 0.85rem;
   }
 
   /* Grid & Sections */
   .grid {
     gap: var(--spacing-4);
+    grid-template-columns: 1fr !important;
   }
 
   .grid-cols-4, .grid-cols-3, .grid-cols-2, .grid-cols-1 {
@@ -915,7 +928,7 @@ footer a:hover {
   }
 
   section {
-    padding: var(--spacing-8) var(--spacing-3) !important;
+    padding: var(--spacing-6) var(--spacing-3) !important;
   }
 
   /* Cards */
@@ -935,31 +948,30 @@ footer a:hover {
 
   .product-image {
     width: 100%;
-    height: 180px;
+    height: 150px;
     margin-bottom: var(--spacing-4);
   }
 
   .product-info {
-    padding: var(--spacing-4);
+    padding: var(--spacing-3);
   }
 
   .product-name {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   .product-price {
-    font-size: 1.35rem;
+    font-size: 1.2rem;
   }
 
   /* Buttons */
   button, .btn {
-    padding: var(--spacing-2) var(--spacing-4);
-    font-size: 0.95rem;
-    width: 100%;
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: 0.85rem;
   }
 
-  button:not(.qty-control button) {
-    width: 100%;
+  button.btn-primary, button.btn-secondary, button.btn-ghost {
+    min-width: 60px;
   }
 
   /* Forms */
@@ -968,16 +980,28 @@ footer a:hover {
     padding: var(--spacing-3);
   }
 
-  /* Sidebar & Order Summary */
+  input[type="text"], input[type="search"] {
+    width: 100%;
+  }
+
+  /* Sidebar & Categories */
   .sidebar {
     position: static;
-    margin-bottom: var(--spacing-6);
-    padding: var(--spacing-4);
+    margin-bottom: var(--spacing-4);
+    padding: var(--spacing-3);
     height: auto;
+    border-radius: var(--radius-md);
   }
 
   .sidebar-title {
-    font-size: 1.1rem;
+    font-size: 1rem;
+    margin-bottom: var(--spacing-3);
+  }
+
+  .filter-item {
+    padding: var(--spacing-2) var(--spacing-3);
+    font-size: 0.9rem;
+    margin-bottom: var(--spacing-1);
   }
 
   .order-summary {
@@ -991,7 +1015,7 @@ footer a:hover {
   .cart-item {
     flex-direction: column;
     gap: var(--spacing-2);
-    padding: var(--spacing-3) 0;
+    padding: var(--spacing-2) 0;
   }
 
   .qty-control {
@@ -1001,24 +1025,37 @@ footer a:hover {
 
   /* Empty State */
   .empty-state {
-    padding: var(--spacing-8) var(--spacing-4);
+    padding: var(--spacing-6) var(--spacing-3);
   }
 
   .empty-state-icon {
-    font-size: 3rem;
+    font-size: 2.5rem;
   }
 
   .empty-state-title {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
   }
 
   /* Footer */
   footer {
-    padding: var(--spacing-8) var(--spacing-4);
+    padding: var(--spacing-6) var(--spacing-3);
   }
 
   footer .grid {
-    gap: var(--spacing-6);
+    gap: var(--spacing-4);
+  }
+
+  footer h4 {
+    font-size: 1rem;
+    margin-bottom: var(--spacing-3);
+  }
+
+  footer ul li {
+    margin-bottom: var(--spacing-1) !important;
+  }
+
+  footer a {
+    font-size: 0.9rem;
   }
 }
 
